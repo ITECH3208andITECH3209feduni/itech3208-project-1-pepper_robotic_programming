@@ -1,0 +1,49 @@
+<!-- room.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Room Direction</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <a href="index.html" class="back-btn floating-back">
+    Back
+  </a>
+
+  <main class="direction-page fade-in">
+
+    <h1 id="roomTitle"></h1>
+
+    <div class="image-wrapper">
+      <img id="roomImage" src="" alt="">
+    </div>
+
+    <div class="countdown-wrapper">
+
+      <svg class="progress-ring" width="140" height="140">
+        <circle class="progress-bg" cx="70" cy="70" r="60"></circle>
+        <circle class="progress-circle" cx="70" cy="70" r="60"></circle>
+      </svg>
+
+      <div class="countdown-text">
+        <span id="countdown">20</span>
+        
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
