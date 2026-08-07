@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Weather</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="/libs/qimessaging/2/qimessaging.js"></script>
+    <script src="tag.js"></script>
+<link rel="stylesheet" href="style.css">
+<script src="weather.js"></script>
+</head>
+
+<body>
+
+<h1>Current Weather</h1>
+
+<p class="weather-subtitle">
+    Ballarat, Victoria
+</p>
+
+<div class="weather-grid">
+
+    <div class="weather-item">
+        <h2>Temperature</h2>
+        <p id="temperature">-- °C</p>
+    </div>
+
+    <div class="weather-item">
+        <h2>Condition</h2>
+        <p id="condition">--</p>
+    </div>
+
+    <div class="weather-item">
+        <h2>Wind Speed</h2>
+        <p id="wind">-- km/h</p>
+    </div>
+
+    <div class="weather-item">
+        <h2>Humidity</h2>
+        <p id="humidity">-- %</p>
+    </div>
+
+    <div class="weather-item">
+    <h2>Today's Maximum</h2>
+    <p id="maxTemp">-- °C</p>
+</div>
+
+<div class="weather-item">
+    <h2>Today's Minimum</h2>
+    <p id="minTemp">-- °C</p>
+</div>
+
+</div>
+
+<p id="updated" class="weather-updated">
+    Loading...
+</p>
+<button class="back-btn pepper-btn"
+                onclick="goToDialogTag('informationMenu')">
+            Back to Information Menu
+        </button>
+</body>
+</html>
+
