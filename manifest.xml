@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="template_new_boxese-19b19d" version="0.0.0">
+ <names>
+  <name lang="en_US">Untitled</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="behavior_1">
+   <userRequestable/>
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+  <dialogContent typeVersion="1.0" topicName="greetingtopic">
+   <topic path="greetingtopic/greetingtopic_enu.top" language="en_US"/>
+  </dialogContent>
+  <dialogContent typeVersion="1.0" topicName="directions">
+   <topic path="directions/directions_enu.top" language="en_US"/>
+  </dialogContent>
+ </contents>
+</package>

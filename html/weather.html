@@ -1,0 +1,400 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    />
+
+    <script src="/libs/qimessaging/2/qimessaging.js"></script>
+    <script src="tag.js"></script>
+	<link rel="stylesheet" href="style.css">
+
+    <title>Ballarat Weather</title>
+
+</head>
+
+
+<body>
+
+    <main class="page-shell fade-in">
+
+        <div class="content-card weather-content">
+
+            <button
+                type="button"
+                class="page-back-button"
+                onclick="goToDialogTag('informationMenu')">
+                Back
+            </button>
+
+            <h1>Ballarat Weather</h1>
+
+            <h2>Today's Weather</h2>
+
+            <div
+                class="weather-card"
+                id="weather">
+                Loading weather...
+            </div>
+
+            <h2>Temperature</h2>
+
+            <div
+                class="weather-card"
+                id="temperature">
+                Loading temperature...
+            </div>
+
+            <div id="status">
+                Starting...
+            </div>
+
+        </div>
+
+    </main>
+
+
+<script>
+
+/* =========================================
+   Pepper QiSession
+   ========================================= */
+
+var pepperSession = null;
+
+
+new QiSession(
+
+    function(session) {
+
+        pepperSession = session;
+
+        document.getElementById("status").innerHTML =
+            "STEP 1: QiSession connected";
+
+    },
+
+    function(error) {
+
+        document.getElementById("status").innerHTML =
+            "QiSession ERROR: " + error;
+
+    }
+
+);
+
+
+
+/* =========================================
+   Convert weather code to readable text
+   ========================================= */
+
+function getWeatherDescription(code) {
+
+    if (code === 0) {
+        return "Clear Sky";
+    }
+
+    else if (code === 1) {
+        return "Mainly Clear";
+    }
+
+    else if (code === 2) {
+        return "Partly Cloudy";
+    }
+
+    else if (code === 3) {
+        return "Overcast";
+    }
+
+    else if (
+        code === 45 ||
+        code === 48
+    ) {
+        return "Foggy";
+    }
+
+    else if (
+        code === 51 ||
+        code === 53 ||
+        code === 55
+    ) {
+        return "Drizzle";
+    }
+
+    else if (
+        code === 61 ||
+        code === 63 ||
+        code === 65
+    ) {
+        return "Rain";
+    }
+
+    else if (
+        code === 71 ||
+        code === 73 ||
+        code === 75
+    ) {
+        return "Snow";
+    }
+
+    else if (
+        code === 80 ||
+        code === 81 ||
+        code === 82
+    ) {
+        return "Rain Showers";
+    }
+
+    else if (
+        code === 95 ||
+        code === 96 ||
+        code === 99
+    ) {
+        return "Thunderstorm";
+    }
+
+    else {
+        return "Unknown Weather";
+    }
+
+}
+
+
+
+/* =========================================
+   Send weather and temperature to Pepper
+   ========================================= */
+
+function sendWeatherToPepper(weather, temperature) {
+
+    document.getElementById("status").innerHTML +=
+        "<br>STEP 5: Preparing weatherData";
+
+
+    var value =
+        weather + "|" + temperature;
+
+
+    document.getElementById("status").innerHTML +=
+        "<br>Value = " + value;
+
+
+    if (pepperSession === null) {
+
+        document.getElementById("status").innerHTML +=
+            "<br>ERROR: QiSession is not ready";
+
+        return;
+    }
+
+
+    document.getElementById("status").innerHTML +=
+        "<br>STEP 6: Requesting ALMemory";
+
+
+    pepperSession.service("ALMemory").then(
+
+        function(memory) {
+
+            document.getElementById("status").innerHTML +=
+                "<br>STEP 7: ALMemory connected";
+
+
+            memory.raiseEvent(
+                "weatherData",
+                value
+            ).then(
+
+                function() {
+
+                    document.getElementById("status").innerHTML +=
+                        "<br>STEP 8: weatherData sent";
+
+                },
+
+                function(error) {
+
+                    document.getElementById("status").innerHTML +=
+                        "<br>raiseEvent ERROR: "
+                        + error;
+
+                }
+
+            );
+
+        },
+
+        function(error) {
+
+            document.getElementById("status").innerHTML +=
+                "<br>ALMemory ERROR: "
+                + error;
+
+        }
+
+    );
+
+}
+
+
+
+/* =========================================
+   Open-Meteo API
+   ========================================= */
+
+var latitude = -37.5622;
+var longitude = 143.8503;
+
+
+var url =
+    "https://api.open-meteo.com/v1/forecast" +
+    "?latitude=" + latitude +
+    "&longitude=" + longitude +
+    "&current=temperature_2m,weather_code";
+
+
+document.getElementById("status").innerHTML +=
+    "<br>STEP 2: Starting Open-Meteo request";
+
+
+var request =
+    new XMLHttpRequest();
+
+
+request.open(
+    "GET",
+    url,
+    true
+);
+
+
+
+request.onreadystatechange = function() {
+
+    if (request.readyState === 4) {
+
+        document.getElementById("status").innerHTML +=
+            "<br>STEP 3: HTTP request finished";
+
+        document.getElementById("status").innerHTML +=
+            "<br>HTTP status = "
+            + request.status;
+
+
+        if (request.status === 200) {
+
+            var data;
+
+            try {
+
+                data =
+                    JSON.parse(
+                        request.responseText
+                    );
+
+            }
+
+            catch (error) {
+
+                document.getElementById("weather").innerHTML =
+                    "JSON Error";
+
+                document.getElementById("status").innerHTML +=
+                    "<br>JSON ERROR: "
+                    + error.message;
+
+                return;
+            }
+
+
+            var temperature =
+                data.current.temperature_2m;
+
+
+            var weatherCode =
+                data.current.weather_code;
+
+
+            var weather =
+                getWeatherDescription(
+                    weatherCode
+                );
+
+
+            document.getElementById("status").innerHTML +=
+                "<br>STEP 4: Weather data received";
+
+            document.getElementById("status").innerHTML +=
+                "<br>Weather = "
+                + weather;
+
+            document.getElementById("status").innerHTML +=
+                "<br>Temperature = "
+                + temperature;
+
+
+            /* Display on tablet */
+
+            document.getElementById("weather").innerHTML =
+                weather;
+
+
+            document.getElementById("temperature").innerHTML =
+                temperature + " °C";
+
+
+            /* Send same data to Pepper */
+
+            sendWeatherToPepper(
+                weather,
+                temperature
+            );
+
+        }
+
+        else {
+
+            document.getElementById("weather").innerHTML =
+                "Unable to load weather";
+
+
+            document.getElementById("status").innerHTML +=
+                "<br>HTTP ERROR: "
+                + request.status;
+
+        }
+
+    }
+
+};
+
+
+
+request.onerror = function() {
+
+    document.getElementById("weather").innerHTML =
+        "Network Error";
+
+
+    document.getElementById("status").innerHTML +=
+        "<br>Network Error";
+
+};
+
+
+
+request.send();
+
+
+</script>
+
+</body>
+
+</html>
+

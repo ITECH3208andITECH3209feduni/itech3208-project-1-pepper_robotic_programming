@@ -1,0 +1,153 @@
+<!-- room.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Room Direction</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+	<script src="tag.js"></script>
+	<script src="/libs/qimessaging/2/qimessaging.js"></script>
+
+</head>
+
+<body>
+
+    <button
+    type="button"
+    class="page-back-button"
+    onclick="goToDialogTag('roomlists')">
+    Back
+	</button>
+
+
+    <main class="direction-page fade-in">
+
+        <h1 id="roomTitle"></h1>
+
+
+        <div class="image-wrapper">
+
+            <img
+                id="roomImage"
+                src=""
+                alt=""
+            >
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        function getQueryParam(name) {
+
+            var query =
+                window.location.search.substring(1);
+
+            var vars =
+                query.split("&");
+
+
+            for (
+                var i = 0;
+                i < vars.length;
+                i++
+            ) {
+
+                var pair =
+                    vars[i].split("=");
+
+
+                if (
+                    decodeURIComponent(pair[0]) === name
+                ) {
+
+                    return decodeURIComponent(
+                        pair[1] || ""
+                    );
+
+                }
+
+            }
+
+
+            return "";
+
+        }
+
+
+
+        window.onload = function () {
+
+            var title =
+                getQueryParam("title");
+
+
+            var img =
+                getQueryParam("img");
+
+
+            var roomTitle =
+                document.getElementById(
+                    "roomTitle"
+                );
+
+
+            var roomImage =
+                document.getElementById(
+                    "roomImage"
+                );
+
+
+            if (roomTitle) {
+
+                roomTitle.innerHTML =
+                    "Here are the directions to the "
+                    + title;
+
+            }
+
+
+            if (
+                roomImage &&
+                img
+            ) {
+
+                roomImage.src =
+                    img;
+
+            }
+
+        };
+
+    </script>
+
+
+</body>
+
+</html>

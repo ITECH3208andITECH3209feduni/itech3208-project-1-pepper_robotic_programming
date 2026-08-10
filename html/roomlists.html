@@ -1,0 +1,174 @@
+
+<!-- roomlists.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,
+                 initial-scale=1.0,
+                 maximum-scale=1.0,
+                 user-scalable=no">
+
+    <title>Room Directions</title>
+
+    <script src="/libs/qimessaging/2/qimessaging.js"></script>
+    <script src="tag.js"></script>
+
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+
+<body>
+
+    <main class="tablet-page room-list-page fade-in">
+
+        <!-- Fixed top-right Back button -->
+        <button
+            type="button"
+            class="page-back-button"
+            onclick="goToDialogTag('informationMenu')">
+            Back
+        </button>
+
+        <!-- Page heading -->
+        <header class="room-list-header">
+
+            <h1 class="page-title room-list-title">
+                Please select a room for directions
+            </h1>
+
+            <p class="page-text room-list-description">
+                Touch one of the room buttons below.
+            </p>
+
+        </header>
+
+        <!-- Scrollable room list -->
+        <div class="room-list-content">
+
+            <!-- Level 1 -->
+            <section class="room-section">
+
+                <h2 class="section-title">
+                    Level 1
+                </h2>
+
+                <div class="room-button-list">
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Director%20Office&amp;img=images/director-office.jpg"
+						onclick="goToDialogTag('room1')">
+                        Director Office
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=IT%20Room&amp;img=images/it-room.jpg"
+						onclick="goToDialogTag('room2')">
+                        IT Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Meeting%20Room&amp;img=images/meeting-room.jpg"
+						onclick="goToDialogTag('room3')">
+                        Meeting Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=New%20Energy%20Map&amp;img=images/new-energy-map.jpg"
+						onclick="goToDialogTag('room4')">
+                        New Energy Map
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Presentation%20Space&amp;img=images/presentation-space.jpg">
+                        Presentation Space
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Staff%20Room&amp;img=images/staff-room.jpg">
+                        Staff Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Level%201%20Toilets&amp;img=images/Here-are-directions-to-the-level-1-toilets.jpg">
+                        Level 1 Toilets
+                    </a>
+
+                </div>
+
+            </section>
+
+            <!-- Level 2 -->
+            <section class="room-section">
+
+                <h2 class="section-title">
+                    Level 2
+                </h2>
+
+                <div class="room-button-list">
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Breakout%20Room&amp;img=images/breakout-room.jpg"
+						onclick="goToDialogTag('room1')">
+                        Breakout Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Food%20Room&amp;img=images/food-room.jpg">
+                        Food Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Science%20Prep%20Room&amp;img=images/science-prep-room.jpg">
+                        Science Prep Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Science%20Room&amp;img=images/science-room.jpg">
+                        Science Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Staff%20Lunch%20Room&amp;img=images/staff-lunch-room.jpg">
+                        Staff Lunch Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Studio%20Room&amp;img=images/studio-room.jpg">
+                        Studio Room
+                    </a>
+
+                    <a
+                        class="room-button"
+                        href="room.html?title=Level%202%20Toilets&amp;img=images/toilet2.jpg">
+                        Level 2 Toilets
+                    </a>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>
+

@@ -1,0 +1,1355 @@
+<?xml version="1.0" encoding="UTF-8" ?><ChoregrapheProject xmlns="http://www.aldebaran-robotics.com/schema/choregraphe/project.xsd" xar_version="3"><Box name="root" id="-1" localization="8" tooltip="Root box of Choregraphe&apos;s behavior. Highest level possible." x="0" y="0"><bitmap>media/images/box/root.png</bitmap><script language="4"><content><![CDATA[]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Timeline enable="0"><BehaviorLayer name="behavior_layer1"><BehaviorKeyframe name="keyframe1" index="1"><Diagram scale="84.0896"><Box name="Say" id="1" localization="8" tooltip="Say some text. The text can be localized." x="426" y="63"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="97" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Hello." default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="new speech reco" id="2" localization="8" tooltip="" x="1050" y="626"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.asr = None
+        self.tts = None
+        self.memory = None
+
+        self.word_subscriber = None
+        self.word_signal = None
+
+        self.subscriber_name = "SafeSpeechRecoBox"
+        self.subscribed = False
+        self.vocab_initialized = False
+        self.listening = False
+
+        self.confidence_threshold = 0.4
+        self.vocab = ["yes", "no", "back"]
+
+    def onLoad(self):
+        try:
+            self.asr = ALProxy("ALSpeechRecognition")
+            self.tts = ALProxy("ALTextToSpeech")
+            self.memory = ALProxy("ALMemory")
+        except Exception as e:
+            self.emitError("onLoad error: " + str(e))
+
+    def onUnload(self):
+        self.stopReco()
+
+    def emitError(self, msg):
+        try:
+            self.onError(str(msg))
+        except:
+            self.logger.error(str(msg))
+
+    def stopTTS(self):
+        try:
+            if self.tts is not None:
+                self.tts.stop()
+        except Exception as e:
+            self.logger.warning("stopTTS failed: " + str(e))
+
+    def onInput_onStart(self):
+        try:
+            self.logger.info("Step 1: stopTTS")
+            self.stopTTS()
+
+            self.logger.info("Step 2: initVocabularyOnce")
+            self.initVocabularyOnce()
+
+            self.logger.info("Step 3: startReco")
+            self.startReco()
+
+            self.logger.info("SafeSpeechReco started")
+
+        except Exception as e:
+            self.emitError("onStart error: " + str(e))
+
+    def onInput_onStop(self):
+        self.stopReco()
+        try:
+            self.onStopped()
+        except:
+            pass
+
+    def initVocabularyOnce(self):
+        if self.vocab_initialized:
+            return
+
+        try:
+            self.asr.pause(True)
+            self.asr.setLanguage("English")
+            self.asr.setVocabulary(self.vocab, False)
+            self.vocab_initialized = True
+            self.asr.pause(False)
+
+        except Exception as e:
+            try:
+                self.asr.pause(False)
+            except:
+                pass
+            raise Exception("initVocabularyOnce error: " + str(e))
+
+    def startReco(self):
+        if self.listening:
+            return
+
+        try:
+            self.word_subscriber = self.memory.subscriber("WordRecognized")
+            self.word_signal = self.word_subscriber.signal.connect(self.onWordRecognized)
+
+            if not self.subscribed:
+                self.asr.subscribe(self.subscriber_name)
+                self.subscribed = True
+
+            self.listening = True
+
+        except Exception as e:
+            raise Exception("startReco error: " + str(e))
+
+    def stopReco(self):
+        self.listening = False
+
+        try:
+            if self.word_subscriber is not None and self.word_signal is not None:
+                self.word_subscriber.signal.disconnect(self.word_signal)
+        except:
+            pass
+
+        self.word_subscriber = None
+        self.word_signal = None
+
+        try:
+            if self.asr is not None and self.subscribed:
+                self.asr.unsubscribe(self.subscriber_name)
+                self.subscribed = False
+        except:
+            self.subscribed = False
+
+    def convertTupleToString(self, value):
+        if value is None or len(value) < 2:
+            return None
+
+        try:
+            return str(value[0]).lower().strip()
+        except:
+            return None
+
+    def onWordRecognized(self, value):
+        try:
+            if not self.listening:
+                return
+
+            if value is None or len(value) < 2:
+                return
+
+            word = self.convertTupleToString(value)
+            confidence = float(value[1])
+
+            if word is None:
+                return
+
+            if word not in self.vocab:
+                return
+
+            if confidence < self.confidence_threshold:
+                return
+
+            self.stopReco()
+
+            self.onRecoResult(word)
+            self.onConfidence(confidence)
+
+        except Exception as e:
+            self.emitError("onWordRecognized error: " + str(e))]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="onRecoResult" type="3" type_size="1" nature="2" inner="0" tooltip="" id="5" /><Output name="onError" type="3" type_size="1" nature="2" inner="0" tooltip="" id="6" /></Box><Box name="Say (1)" id="3" localization="8" tooltip="Say some text. The text can be localized." x="41" y="265"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Do you want to know more information about Ballarat Tech School " default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (2)" id="5" localization="8" tooltip="Say some text. The text can be localized." x="551" y="588"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="good to hear that we have different projects" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (3)" id="6" localization="8" tooltip="Say some text. The text can be localized." x="567" y="751"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="OK it is fine" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="new speech reco (1)" id="7" localization="8" tooltip="" x="854" y="495"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[# -*- coding: utf-8 -*-
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.asr = None
+        self.memory = None
+        self.subscriber = None
+        self.signal_id = None
+
+        self.module_name = "SimpleSpeechRecoBox"
+        self.vocabulary = ["one", "two", "three"]
+        self.confidence_threshold = 0.40
+
+        self.is_listening = False
+        self.has_finished = False
+
+    def onLoad(self):
+        self.logger.info("SimpleSpeechRecoBox loaded")
+        self._init_services()
+
+    def onUnload(self):
+        self._stop_listening()
+
+    def onInput_onStart(self):
+        try:
+            self.has_finished = False
+            self.logger.info("Start listening...")
+            self._init_services()
+
+            #clearing vacabulary list at first
+            self._set_vocabulary_safely(self.vocabulary)
+
+            #then start lis
+            self._start_listening()
+
+        except Exception as e:
+            self.logger.error("Failed to start ASR: %s" % str(e))
+            self._finish_default()
+
+    def onInput_onStop(self):
+        self.logger.info("SpeechReco stopped by user")
+        self._finish_default()
+
+    def _init_services(self):
+        if self.asr is None:
+            self.asr = self.session().service("ALSpeechRecognition")
+        if self.memory is None:
+            self.memory = self.session().service("ALMemory")
+
+    def change_vocabulary(self, new_words):
+        self._set_vocabulary_safely(new_words)
+
+    def _set_vocabulary_safely(self, new_words):
+        self.logger.info("Setting vocabulary safely: %s" % str(new_words))
+
+        self._stop_listening()
+
+        try:
+            self.asr.pause(True)
+        except Exception:
+            pass
+
+        self.vocabulary = new_words
+        self.asr.setLanguage("English")
+        self.asr.setVocabulary(self.vocabulary, False)
+
+        try:
+            self.asr.pause(False)
+        except Exception:
+            pass
+
+    def _start_listening(self):
+        self._stop_listening()
+
+        self.subscriber = self.memory.subscriber("WordRecognized")
+        self.signal_id = self.subscriber.signal.connect(self.on_word_recognized)
+
+        self.asr.subscribe(self.module_name)
+        self.is_listening = True
+
+        self.logger.info("ASR subscribed")
+
+    def _stop_listening(self):
+        try:
+            if self.subscriber is not None and self.signal_id is not None:
+                self.subscriber.signal.disconnect(self.signal_id)
+        except Exception:
+            pass
+
+        self.signal_id = None
+        self.subscriber = None
+
+        try:
+            if self.asr is not None:
+                self.asr.unsubscribe(self.module_name)
+        except Exception:
+            pass
+
+        self.is_listening = False
+
+    def on_word_recognized(self, value):
+        try:
+            if not self.is_listening or self.has_finished:
+                return
+
+            if value is None or len(value) < 2:
+                return
+
+            heard_word = str(value[0]).strip().lower()
+            confidence = float(value[1])
+
+            self.logger.info("WordRecognized raw: %s" % str(value))
+
+            if heard_word == "":
+                return
+
+            if confidence < self.confidence_threshold:
+                self.logger.info("Confidence too low: %s" % str(confidence))
+                return
+
+            self.has_finished = True
+            self._stop_listening()
+
+            self.word(heard_word)
+            self.recognized()
+            self.onStopped()
+
+        except Exception as e:
+            self.logger.error("Recognition callback error: %s" % str(e))
+            self._finish_default()
+
+    def _finish_default(self):
+        if self.has_finished:
+            return
+
+        self.has_finished = True
+        self._stop_listening()
+
+        try:
+            self.onDefault()
+        except Exception:
+            pass
+
+        self.onStopped()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="recognized" type="1" type_size="1" nature="2" inner="0" tooltip="" id="5" /><Output name="word" type="3" type_size="1" nature="2" inner="0" tooltip="" id="6" /><Output name="onDefault" type="1" type_size="1" nature="2" inner="0" tooltip="" id="7" /></Box><Box name="Say (4)" id="8" localization="8" tooltip="Say some text. The text can be localized." x="723" y="592"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="103" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Which one do you want to know" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="new switch box (1)" id="9" localization="8" tooltip="" x="1036" y="332"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[# -*- coding: utf-8 -*-
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        self.last_word = None
+
+    def onInput_word(self, value):
+        # 保存输入的字符串
+        try:
+            self.last_word = str(value).strip().lower()
+            self.logger.info("Received word: %s" % self.last_word)
+        except:
+            self.last_word = None
+
+    def onInput_onStart(self):
+        # 每次触发时根据 last_word 做判断
+        if not self.last_word:
+            self.logger.info("No word received")
+            self.onDefault()
+            return
+
+        word = self.last_word
+
+        if word == "one":
+            self.logger.info("Matched TEA")
+            self.onOne()
+
+        elif word == "two":
+            self.logger.info("Matched COFFEE")
+            self.onTwo()
+
+        elif word == "three":
+            self.logger.info("Matched HELLO")
+            self.onThree()
+
+        else:
+            self.logger.info("Default branch")
+            self.onDefault()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="word" type="3" type_size="1" nature="1" inner="0" tooltip="" id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="onOne" type="1" type_size="1" nature="2" inner="0" tooltip="" id="5" /><Output name="onTwo" type="1" type_size="1" nature="2" inner="0" tooltip="" id="6" /><Output name="onThree" type="1" type_size="1" nature="2" inner="0" tooltip="" id="7" /><Output name="onDefault" type="1" type_size="1" nature="2" inner="0" tooltip="" id="8" /><Parameter name="Parameter" inherits_from_parent="0" content_type="3" value="one" default_value="two" custom_choice="1" tooltip="" id="9"><Choice value="one" /><Choice value="two" /></Parameter></Box><Box name="Say (5)" id="10" localization="8" tooltip="Say some text. The text can be localized." x="1183" y="870"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="97" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="97" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="This is project 2" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (6)" id="11" localization="8" tooltip="Say some text. The text can be localized." x="1241" y="322"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="82" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="94" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="This is project 1" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (7)" id="12" localization="8" tooltip="Say some text. The text can be localized." x="1249" y="452"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="This is project3" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (8)" id="4" localization="8" tooltip="Say some text. The text can be localized." x="1549" y="667"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+        while( self.bIsRunning ):
+            time.sleep( 0.2 )
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Hello" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="new speech reco (2)" id="15" localization="8" tooltip="" x="442" y="494"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[# -*- coding: utf-8 -*-
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.asr = None
+        self.memory = None
+        self.subscriber = None
+        self.signal_id = None
+
+        self.module_name = "SimpleSpeechRecoBox"
+        self.vocabulary = ["yes", "no", "neither"]
+        self.confidence_threshold = 0.20
+
+        self.is_listening = False
+        self.has_finished = False
+
+    def onLoad(self):
+        self.logger.info("SimpleSpeechRecoBox loaded")
+        self._init_services()
+
+    def onUnload(self):
+        self._stop_listening()
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        try:
+            self.has_finished = False
+            self.logger.info("Start listening...")
+            self._init_services()
+
+            # 每次开始前，安全更新词表
+            self._set_vocabulary_safely(self.vocabulary)
+
+            # 再开始监听
+            self._start_listening()
+
+        except Exception as e:
+            self.logger.error("Failed to start ASR: %s" % str(e))
+            self._finish_default()
+
+    def onInput_onStop(self):
+        self.logger.info("SpeechReco stopped by user")
+        self._finish_default()
+        self.onUnload()
+
+    def _init_services(self):
+        if self.asr is None:
+            self.asr = self.session().service("ALSpeechRecognition")
+        if self.memory is None:
+            self.memory = self.session().service("ALMemory")
+
+    def change_vocabulary(self, new_words):
+        self._set_vocabulary_safely(new_words)
+
+    def _set_vocabulary_safely(self, new_words):
+        self.logger.info("Setting vocabulary safely: %s" % str(new_words))
+
+        self._stop_listening()
+
+        try:
+            self.asr.pause(True)
+        except Exception:
+            pass
+
+        self.vocabulary = new_words
+        self.asr.setLanguage("English")
+        self.asr.setVocabulary(self.vocabulary, False)
+
+        try:
+            self.asr.pause(False)
+        except Exception:
+            pass
+
+    def _start_listening(self):
+        self._stop_listening()
+
+        self.subscriber = self.memory.subscriber("WordRecognized")
+        self.signal_id = self.subscriber.signal.connect(self.on_word_recognized)
+
+        self.asr.subscribe(self.module_name)
+        self.is_listening = True
+
+        self.logger.info("ASR subscribed")
+
+    def _stop_listening(self):
+        try:
+            if self.subscriber is not None and self.signal_id is not None:
+                self.subscriber.signal.disconnect(self.signal_id)
+        except Exception:
+            pass
+
+        self.signal_id = None
+        self.subscriber = None
+
+        try:
+            if self.asr is not None:
+                self.asr.unsubscribe(self.module_name)
+        except Exception:
+            pass
+
+        self.is_listening = False
+
+    def on_word_recognized(self, value):
+        try:
+            if not self.is_listening or self.has_finished:
+                return
+
+            if value is None or len(value) < 2:
+                return
+
+            heard_word = str(value[0]).strip().lower()
+            confidence = float(value[1])
+
+            self.logger.info("WordRecognized raw: %s" % str(value))
+
+            if heard_word == "":
+                return
+
+            if confidence < self.confidence_threshold:
+                self.logger.info("Confidence too low: %s" % str(confidence))
+                return
+
+            self.has_finished = True
+            self._stop_listening()
+
+            self.word(heard_word)
+            self.recognized()
+            self.onStopped()
+
+        except Exception as e:
+            self.logger.error("Recognition callback error: %s" % str(e))
+            self._finish_default()
+
+    def _finish_default(self):
+        if self.has_finished:
+            return
+
+        self.has_finished = True
+        self._stop_listening()
+
+        try:
+            self.onDefault()
+        except Exception:
+            pass
+
+        self.onStopped()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="recognized" type="1" type_size="1" nature="2" inner="0" tooltip="" id="5" /><Output name="word" type="3" type_size="1" nature="2" inner="0" tooltip="" id="6" /><Output name="onDefault" type="1" type_size="1" nature="2" inner="0" tooltip="" id="7" /></Box><Box name="Set Language" id="14" localization="8" tooltip="Set the language of your robot for the current application. Your robot will speak and understand the selected language as long as your application has focus. Any following call to ALSpeechRecognition (Speech Reco. box for instance), ALTextToSpeech (Say box for instance) or ALDialog will use this language.&#x0A;" x="633" y="52"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+
+    def onLoad(self):
+        try:
+            self.tts = ALProxy("ALTextToSpeech")
+        except:
+            self.logger.warn("ALTextToSpeech is not available, language setting cannot be applied to speech")
+            self.tts = None
+
+        try:
+            self.asr = ALProxy("ALSpeechRecognition")
+        except:
+            self.logger.warn("ALSpeechRecognition is not available, language setting cannot be applied to recognition")
+            self.asr = None
+
+        try:
+            self.dialog = ALProxy("ALDialog")
+        except:
+            self.logger.warn("ALDialog is not available, language setting cannot be applied to dialog")
+            self.dialog = None
+
+    def onInput_onSet(self):
+        lang = self.getParameter("Language")
+        try:
+            if self.asr:
+                self.asr.setLanguage( self.getParameter("Language") )
+            if self.tts:
+                self.tts.setLanguage( self.getParameter("Language") )
+            if self.dialog:
+                self.dialog.setLanguage( self.getParameter("Language") )
+            if self.tts is None and self.asr is None and self.dialog is None:
+                raise RuntimeError("Cannot set language: neither ALTextToSpeech nor ALSpeechRecognition nor ALDialog is available.")
+            self.onReady()
+        except:
+            error = "Language " + lang + " cannot be set."
+            self.logger.warn(error)
+            self.onError(error)]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onSet" type="1" type_size="1" nature="1" inner="0" tooltip="The data is set when a signal is received on this input." id="2" /><Output name="onReady" type="1" type_size="1" nature="2" inner="0" tooltip="Signal sent when the data has been set." id="3" /><Output name="onError" type="3" type_size="1" nature="2" inner="0" tooltip="Error output:&#x0A;- triggered if the language asked cannot be set" id="4" /><Parameter name="Language" inherits_from_parent="0" content_type="3" value="English" default_value="English" custom_choice="1" tooltip="Set the language the robot speaks and understands." id="5"><Choice value="Arabic" /><Choice value="Brazilian" /><Choice value="Chinese" /><Choice value="Czech" /><Choice value="Danish" /><Choice value="Dutch" /><Choice value="English" /><Choice value="Finnish" /><Choice value="French" /><Choice value="German" /><Choice value="Greek" /><Choice value="Italian" /><Choice value="Japanese" /><Choice value="Korean" /><Choice value="MandarinTaiwan" /><Choice value="Norwegian" /><Choice value="Polish" /><Choice value="Portuguese" /><Choice value="Russian" /><Choice value="Spanish" /><Choice value="Swedish" /><Choice value="Turkish" /></Parameter><Resource name="Speech" type="Lock" timeout="0" /></Box><Box name="greetings" id="16" localization="8" tooltip="" x="903" y="27"><dialogFile>../greetingtopic/greetingtopic.dlg</dialogFile><bitmap>media/images/box/box-dialog.png</bitmap><script language="4"><content><![CDATA[]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /></Box><Box name="Show Web View" id="18" localization="8" tooltip="Shows the webview (html content) on the tablet.&#x0A;&#x0A;V1.0.0&#x0A;" x="157" y="497"><bitmap>media/images/box/internet/internet.png</bitmap><script language="4"><content><![CDATA[
+
+class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        pass
+
+    def onUnload(self):
+        pass
+
+    def _getTabletService(self):
+        tabletService = None
+        try:
+            tabletService = self.session().service("ALTabletService")
+        except Exception as e:
+            self.logger.error(e)
+        return tabletService
+
+    def onInput_onStart(self):
+        # We create TabletService here in order to avoid
+        # problems with connections and disconnections of the tablet during the life of the application
+        tabletService = self._getTabletService()
+        if tabletService:
+            tabletService.showWebview()
+        else:
+            self.logger.warning("ALTabletService not found.")
+        self.onStopped()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="3" /></Box><Box name="Show Web View (1)" id="19" localization="8" tooltip="Shows the webview (html content) on the tablet.&#x0A;&#x0A;V1.0.0&#x0A;" x="665" y="498"><bitmap>media/images/box/internet/internet.png</bitmap><script language="4"><content><![CDATA[
+
+class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        pass
+
+    def onUnload(self):
+        pass
+
+    def _getTabletService(self):
+        tabletService = None
+        try:
+            tabletService = self.session().service("ALTabletService")
+        except Exception as e:
+            self.logger.error(e)
+        return tabletService
+
+    def onInput_onStart(self):
+        # We create TabletService here in order to avoid
+        # problems with connections and disconnections of the tablet during the life of the application
+        tabletService = self._getTabletService()
+        if tabletService:
+            tabletService.showWebview()
+        else:
+            self.logger.warning("ALTabletService not found.")
+        self.onStopped()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="3" /></Box><Box name="functions" id="17" localization="8" tooltip="" x="566" y="241"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[
+from naoqi import ALProxy
+import time
+
+class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        self.memory = ALProxy("ALMemory")
+        self.tablet = ALProxy("ALTabletService")
+        self.tts=ALProxy("ALTextToSpeech")
+        self.dialog = ALProxy("ALDialog")
+
+        self.memory.subscribeToEvent(
+            "introductions",
+            self.getName(),
+            "onVoiceEvent"
+        )
+        self.memory.subscribeToEvent(
+            "buttonback",
+            self.getName(),
+            "onTabletEvent"
+        )
+
+        self.memory.subscribeToEvent(
+            "weatherData",
+            self.getName(),
+            "onWeatherEvent"
+        )
+
+    def onUnload(self):
+        self.memory.unsubscribeToEvent(
+            "introductions",
+            self.getName()
+        )
+
+        self.memory.unsubscribeToEvent(
+            "buttonback",
+            self.getName()
+        )
+
+        self.memory.unsubscribeToEvent(
+            "weatherData",
+            self.getName()
+        )
+
+    def onVoiceEvent(self, key, value, message):
+        print "Event:", key
+        print "Value:", value
+
+        if value == "welcome":
+            self.showPage("welcome.html")
+
+        #Voice interaction roomlist
+        elif value == "roomlists":
+            self.showPage("roomlists.html")
+
+        elif value == "room1":
+            self.showPage("room.html?title=Director%20Office&img=images/director-office.jpg")
+
+        elif value == "room2":
+            self.showPage("room.html?title=IT%20Room&img=images/it-room.jpg")
+
+
+        elif value == "programs":
+            self.showPage("programs.html")
+        elif value =="program1":
+            self.showPage("program1.html")
+        elif value == "program2":
+            self.showPage("program2.html")
+        elif value == "program3":
+            self.showPage("program3.html")
+        elif value == "program4":
+            self.showPage("program4.html")
+        elif value == "program5":
+            self.showPage("program5.html")
+        elif value == "program6":
+            self.showPage("program6.html")
+
+        elif value == "reset":
+            self.showPage("welcome.html")
+        elif value == "history":
+            self.showPage("history.html")
+        elif value == "contact":
+            self.showPage("contact.html")
+
+        elif value=="weather":
+            self.showPage("weather.html")
+
+    def onTabletEvent(self, key, value, message):
+        print "Back Event:", key
+        print "Back to tag:", value
+
+        tag_name = str(value)
+
+        #programs information
+
+        if tag_name == "informationMenu":
+            self.tts.say("back to the main menu")
+            time.sleep(2)
+            self.showPage("welcome.html")
+
+            self.dialog.gotoTag(
+                "informationMenu",
+                "greetingtopic"
+            )
+
+        elif tag_name == "programList":
+            self.showPage("programs.html")
+
+            self.dialog.gotoTag(
+                "programMenu",
+                "greetingtopic"
+            )
+
+        elif tag_name =="program1":
+
+            self.showPage("program1.html")
+
+            self.dialog.gotoTag(
+                "program1",
+                "greetingtopic"
+            )
+
+        elif tag_name =="program2":
+
+            self.showPage("program2.html")
+
+            self.dialog.gotoTag(
+                "program2",
+                "greetingtopic"
+            )
+
+        elif tag_name =="program3":
+
+            self.showPage("program3.html")
+
+            self.dialog.gotoTag(
+                "program3",
+                "greetingtopic"
+            )
+
+        elif tag_name =="program4":
+
+            self.showPage("program4.html")
+
+            self.dialog.gotoTag(
+                "program4",
+                "greetingtopic"
+            )
+
+        #roomList for direction
+
+        elif tag_name == "roomlist":
+            self.showPage("roomlists.html")
+
+            self.dialog.gotoTag(
+                "roomList",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "room1":
+
+
+            self.dialog.gotoTag(
+                "room1",
+                "greetingtopic"
+            )
+
+        elif tag_name == "room2":
+
+
+            self.dialog.gotoTag(
+                "room2",
+                "greetingtopic"
+            )
+
+        elif tag_name == "room3":
+
+
+            self.dialog.gotoTag(
+                "room3",
+                "greetingtopic"
+            )
+
+        #History information
+        elif tag_name == "historyMenu":
+            self.showPage("history.html")
+
+            self.dialog.gotoTag(
+                "historyMenu",
+                "greetingtopic"
+            )
+
+        else:
+            print "Unknown tag:", tag_name
+
+    def onWeatherEvent(self, key, value, message):
+
+        self.logger.info(
+            "========== WEATHER EVENT START =========="
+        )
+
+        # STEP 1
+        self.logger.info(
+            "STEP 1: onWeatherEvent triggered"
+        )
+
+        self.logger.info(
+            "Event key: " + str(key)
+        )
+
+        self.logger.info(
+            "Received value: " + str(value)
+        )
+
+
+        try:
+
+            # STEP 2
+            self.logger.info(
+                "STEP 2: Converting value to string"
+            )
+
+            weatherData = str(value)
+
+            self.logger.info(
+                "weatherData = " + weatherData
+            )
+
+
+            # STEP 3
+            self.logger.info(
+                "STEP 3: Splitting weather data"
+            )
+
+            parts = weatherData.split("|")
+
+            self.logger.info(
+                "Number of parts = " + str(len(parts))
+            )
+
+
+            # Check data
+            if len(parts) < 2:
+
+                self.logger.error(
+                    "ERROR: Invalid weather data"
+                )
+
+                self.logger.error(
+                    "Expected format: Weather|Temperature"
+                )
+
+                return
+
+
+            # STEP 4
+            self.logger.info(
+                "STEP 4: Reading weather value"
+            )
+
+            weather = parts[0]
+
+            self.logger.info(
+                "Weather = " + weather
+            )
+
+
+            # STEP 5
+            self.logger.info(
+                "STEP 5: Reading temperature value"
+            )
+
+            temperature = parts[1]
+
+            self.logger.info(
+                "Temperature = " + temperature
+            )
+
+
+            # STEP 6
+            self.logger.info(
+                "STEP 6: Creating TTS text"
+            )
+
+            text = (
+                "Today's weather is "
+                + weather
+                + ". The temperature is "
+                + temperature
+                + " degrees Celsius."
+
+            )
+
+            self.logger.info(
+                "TTS text = " + text
+            )
+
+
+            # STEP 7
+            self.logger.info(
+                "STEP 7: Calling ALTextToSpeech.say()"
+            )
+
+            self.tts.say(text)
+
+
+            # STEP 8
+            self.logger.info(
+                "STEP 8: TTS completed successfully"
+            )
+
+            self.memory.raiseEvent(
+                "weatherFinished",
+                True
+            )
+
+
+        except Exception as error:
+
+            self.logger.error(
+                "WEATHER EVENT ERROR: "
+                + str(error)
+            )
+
+
+        self.logger.info(
+            "========== WEATHER EVENT END =========="
+        )
+
+
+    def showPage(self, page):
+        try:
+            if page.startswith("http://") or page.startswith("https://"):
+                url = page
+            else:
+                url = (
+                    "http://198.18.0.1/apps/"
+                    ".lastUploadedChoregrapheBehavior/"
+                    + page
+                    + "?v="
+                    + str(int(time.time()))
+                )
+
+            print "Loading page:", url
+
+            load_result = self.tablet.loadUrl(url)
+            print "loadUrl result:", load_result
+
+            show_result = self.tablet.showWebview()
+            print "showWebview result:", show_result
+
+        except Exception as error:
+            print "showPage error:", error]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /></Box><Box name="Show Web View (2)" id="20" localization="8" tooltip="Shows the webview (html content) on the tablet.&#x0A;&#x0A;V1.0.0&#x0A;" x="149" y="210"><bitmap>media/images/box/internet/internet.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        pass
+
+    def onUnload(self):
+        pass
+
+    def _getTabletService(self):
+        tabletService = None
+        try:
+            tabletService = self.session().service("ALTabletService")
+        except Exception as e:
+            self.logger.error(e)
+        return tabletService
+
+    def onInput_onStart(self):
+        tabletService = self._getTabletService()
+
+        if tabletService:
+            tabletService.loadUrl("http://141.132.126.174:8000/index.html")
+            tabletService.showWebview()
+        else:
+            self.logger.warning("ALTabletService not found.")
+
+        self.onStopped()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="3" /></Box><Box name="sds" id="21" localization="8" tooltip="" x="202" y="336"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        #put initialization code here
+        pass
+
+    def onUnload(self):
+        #put clean-up code here
+        pass
+
+    def onInput_onStart(self):
+        #self.onStopped() #activate the output of the box
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
+        self.onStopped() #activate the output of the box]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /></Box><Link inputowner="8" indexofinput="2" outputowner="5" indexofoutput="4" /><Link inputowner="8" indexofinput="2" outputowner="6" indexofoutput="4" /><Link inputowner="7" indexofinput="2" outputowner="8" indexofoutput="4" /><Link inputowner="9" indexofinput="2" outputowner="7" indexofoutput="5" /><Link inputowner="9" indexofinput="3" outputowner="7" indexofoutput="6" /><Link inputowner="7" indexofinput="2" outputowner="9" indexofoutput="8" /><Link inputowner="11" indexofinput="2" outputowner="9" indexofoutput="5" /><Link inputowner="12" indexofinput="2" outputowner="9" indexofoutput="6" /><Link inputowner="10" indexofinput="2" outputowner="9" indexofoutput="7" /><Link inputowner="0" indexofinput="4" outputowner="17" indexofoutput="4" /><Link inputowner="14" indexofinput="2" outputowner="1" indexofoutput="4" /><Link inputowner="17" indexofinput="2" outputowner="0" indexofoutput="2" /><Link inputowner="16" indexofinput="2" outputowner="14" indexofoutput="3" /><Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="2" /><Link inputowner="0" indexofinput="4" outputowner="16" indexofoutput="4" /></Diagram></BehaviorKeyframe></BehaviorLayer></Timeline></Box></ChoregrapheProject>

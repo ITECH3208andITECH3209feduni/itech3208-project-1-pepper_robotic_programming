@@ -1,0 +1,284 @@
+topic: ~greetingtopic()
+language: enu
+
+# Defining extra concepts out of words or group of words
+concept:(yes) [yes OK sure yeap]
+concept:(no) [no not noon]
+concept:(good_morning) [morning "good morning" hi hello]
+concept:(one) [one]
+concept:(two) [two]
+concept:(three) [three]
+concept:(four) [four for]
+concept:(five) [five]
+concept:(six) [six]
+concept:(repeat) [repeat]
+concept:(back) ["turn back" back]
+
+# Catching inputs and triggering outputs
+#u:(e:onStart) $onStopped=1
+
+# Replying to speech
+
+u:(~good_morning) %morininggreeing 
+Good morning,Let's start a wonderful day Are there anything that I can help you?
+
+u:(~yes) %informationMenu 
+    
+    ^call(ALMemory.raiseEvent("introductions","welcome"))
+    hello welcome to Ballarat tech school I am pepper, I can help you with finding directions, giving information about the current programs or just tell you a fun fact, after I stop talking, please wait for my eyes to turn blue before saying. 
+    \pau=1000\
+    one, directions.
+    \pau=500\
+    two, program informations.
+    \pau=500\
+    three, history fact of ballarat tech school.
+    \pau=500\
+    four, today's weather.
+    \pau=600\
+    five, repeat the guide.
+    
+    
+    #tag:directions
+    u1:(~one) %directionMenu
+        
+        would you like directions of ballarat tech school?
+    
+        u2:(~yes)%roomList
+            ^call(ALMemory.raiseEvent("introductions","roomlists"))
+            please take a look at the list of rooms available and choose one with touching on the button or speak the number of it,then I'll show you a map with directions to your room marked.
+            
+            u3:(~one) %room1
+            This is room 1
+            ^call(ALMemory.raiseEvent("introductions","room1"))
+                            
+            \pau=5000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                ^gotoReactivate(roomList)
+            
+            u3:(~two) %room2
+            This is room 2
+            ^call(ALMemory.raiseEvent("introductions","room2"))
+            \pau=2000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                ^gotoReactivate(roomList)
+            
+            u3:(~three) %room3
+            This is room 3
+            ^call(ALMemory.raiseEvent("introductions","room3"))
+            \pau=2000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                ^gotoReactivate(roomList)
+            
+            u3:(~four) %room4
+            This is room 4
+            ^call(ALMemory.raiseEvent("introductions","room4"))
+                \pau=2000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                ^gotoReactivate(roomList)
+            
+            u3:(~five) %room5
+            This is room 5
+            ^call(ALMemory.raiseEvent("introductions","room5"))
+            \pau=2000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+            
+            u3:(~six) %room6
+            This is room 6
+            ^call(ALMemory.raiseEvent("introductions","room6"))
+            \pau=2000\
+            You can say back or touch on the back button to the last menu.
+                 u4:(~back)
+                OK, I will turn to the roomlist menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+            
+            u3:(~back)
+                OK, I will turn to the main menu.
+                \pau=1000\
+                ^call(ALMemory.raiseEvent("introductions","welcome"))
+                ^gotoReactivate(informationMenu)
+        u2:(~no)
+            I hope you had fun, please enjoy your stay at the tech school, I will turn back to the main menu.
+            \pau=1000\
+            ^gotoReactivate(informationMenu)
+            ^call(ALMemory.raiseEvent("introductions","reset"))
+    
+    #tag:program
+    u1:(~two) %programMenu
+        would you like to know current program information? 
+        u2:(~yes) %programList
+            please have a look at the programs listed on the panel.And touch or speak the program you want to know.
+            
+            You also can speak back of touch on the back button to the last menu.
+            ^call(ALMemory.raiseEvent("introductions","programs"))
+            #tag:program1
+            u3:(~one) %program1
+                ^call(ALMemory.raiseEvent("introductions","program1"))
+                
+                3D Modelling is having an ever increasing impact on our lives. Engineers, Architects, Filmmakers, Game Designers, Healthcare Workers, Scientists and Industrial Manufacturers are but a few of the professionals using 3D modelling to increase the speed and accuracy of their work, reduce costly design errors and visualise new innovations.
+                
+                In this program, students will learn to manipulate 3D objects and their meshes             in Blender, a free 3D modelling software package. Through a combination of direct instruction, self paced learning with embedded video tutorials, and experimental play, students can choose their style of learning as they develop skills with the software.
+                Students can use their models to create 3D prints, assets for game engines, animated schematics, and more. In the afternoon, students look at camera work in Blender, creating 2D images or videos from their 3D scenes, introducing the path towards photorealism.
+                
+                \pau=3000\
+                you can say back to the last menu.
+                       
+                u4:(~back)
+                    back to the program list
+                    ^gotoReactivate(programList)
+                    ^call(ALMemory.raiseEvent("introductions","programs"))
+                    
+                    
+            #tag:program2        
+            u3:(~two) %program2
+                ^call(ALMemory.raiseEvent("introductions","program2"))
+                
+                program2 contents
+                \pau=3000\
+                you can say back to the last menu.
+                
+                u4:(~back)
+                    back to the program list
+                    ^gotoReactivate(programList)
+                    ^call(ALMemory.raiseEvent("introductions","programs"))
+                    
+
+            #tag:program3        
+            u3:(~three) %program3
+                ^call(ALMemory.raiseEvent("introductions","program3"))
+                
+                program3 contents
+                \pau=3000\
+                you can say back to the last menu.
+                
+                u4:(~back)
+                    back to the program list
+                    ^gotoReactivate(programList)
+                    ^call(ALMemory.raiseEvent("introductions","programs"))
+
+            #tag:program4        
+            u3:(~four) %program4
+                ^call(ALMemory.raiseEvent("introductions","program4"))
+                
+                program4 contents
+                \pau=3000\
+                you can say back to the last menu.
+                
+                u4:(~back)
+                    back to the program list
+                    ^gotoReactivate(programList)
+                    ^call(ALMemory.raiseEvent("introductions","programs"))
+            
+            #tag:program5        
+            u3:(~five) %program5
+                ^call(ALMemory.raiseEvent("introductions","program5"))
+                
+                program5 contents
+                \pau=3000\
+                You can say back or touch on the back button to the last menu.
+                
+                u4:(~back)
+                    back to the program list
+                    ^gotoReactivate(programList)
+                    ^call(ALMemory.raiseEvent("introductions","programs"))                
+            u3:(~back)
+                Turn back into main menu.
+                ^gotoReactivate(informationMenu)
+                ^call(ALMemory.raiseEvent("introductions","welcome"))
+                
+
+        u2:(~no)
+            I hope you had fun, please enjoy your stay at the tech school, if you need anything else please ask me after the program resets.
+            Turned back into main menu.
+            ^call(ALMemory.raiseEvent("introductions","reset"))
+                       
+    #tag:history
+    u1:(~three) %historyMenu
+        would you like to a historical fact about the ballarat tech school?
+        u2:(~yes)
+            ^call(ALMemory.raiseEvent("introductions","history"))
+            Our Tech School is part of the Victorian Government’s commitment to make Victoria the Education State. Our educational focus is on real-world applications in a high-tech environment, with innovative STEM learning programs developed collaboratively by industry and education partners.
+             We aim to:
+            Prepare students with the skills of the future workforce.
+            Expose and align students with industries predicted to experience strong economic and employment growth in the future.
+            Facilitate industry-based STEM* learning experiences for secondary students which                     foster discovery and encourage curiosity.
+            Cultivate design thinking and collaboration.
+            Encourage critical and creative thinking, communication and use of
+technology. 
+            Our Process
+            Preparing students for success in a rapidly changing world is enhanced when they are provided with the opportunity to investigate real-world issues and challenges. Through our 'discover today, design tomorrow'
+philosophy and with access to state-of-the-art technology, students are able to better develop their understanding of the world outside of their normal classroom environment.
+            
+            \pau=5000\
+            
+            Do you want to go back to the last menu?
+        
+            u3:(~yes)
+                OK, I will go back to the main menu.
+                ^gotoReactivate(informationMenu)
+            u3:(~no)
+                No worries, take your time.
+            
+        
+            
+            
+        u2:(~no)
+            I hope you had fun, please enjoy your stay at the tech school, if you need anything else please ask me after the program resets.
+            turned back to main menu
+            \pau=1000\
+            ^gotoReactivate(informationMenu)
+            ^call(ALMemory.raiseEvent("introductions","reset"))
+            
+            
+    u1:(~four) %weather
+        Now I am going to check today's weather.
+        ^call(ALMemory.raiseEvent("introductions","weather"))
+        
+        
+        u2:(e:weatherFinished) %weatherFinished
+            You can say back to return to the main menu.
+        
+            u3:(~back)
+                I will turn to the main menu.
+                ^gotoReactivate(informationMenu)
+            
+    u1:(~five)
+        Now I am going to repeat it again.
+        \pau=1000\
+        ^call(ALMemory.raiseEvent("introductions","welcome"))
+        ^gotoReactivate(informationMenu)
+        
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
