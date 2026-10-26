@@ -991,19 +991,14 @@ This program merges the new with the old as AI technologies are leveraged to hel
 
             ^call(ALMemory.raiseEvent("introductions","exsistedUser"))
             
-
-        u3:(~no)
-
-
-
-            OK, I will go back to the recognition menu
-
-
-            ^call(ALMemory.raiseEvent("introductions","facialMenu"))
-
-            ^gotoReactivate(facialrecog)
-
-
+            u3:(~no)
+        
+                OK, I will go back to the facial recognition menu.
+        
+                ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+        
+                ^gotoReactivate(facialrecog)
+        
             u3:(~yes) %recognitionRunning
 
 
