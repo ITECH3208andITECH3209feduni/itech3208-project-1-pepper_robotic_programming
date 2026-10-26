@@ -32,7 +32,6 @@
         <File name="tag" src="html/tag.js" />
         <File name="weather" src="html/weather.html" />
         <File name="welcome" src="html/welcome.html" />
-        <File name="html" src="html.zip" />
         <File name="registration" src="html/registration.html" />
         <File name="start" src="html/start.html" />
         <File name="Automation" src="html/programs/Automation.html" />

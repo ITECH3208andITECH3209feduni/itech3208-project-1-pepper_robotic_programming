@@ -346,7 +346,7 @@ u:(~start) %informationMenu
                 ^call(ALMemory.raiseEvent("introductions","roomlists"))
                 
 
-            u3:(~forteen) %room14
+            u3:(~fourteen) %room14
 
             This is Level 2 Toilets.
 
@@ -990,9 +990,18 @@ This program merges the new with the old as AI technologies are leveraged to hel
 
 
             ^call(ALMemory.raiseEvent("introductions","exsistedUser"))
+            
+
+        u3:(~no)
 
 
 
+            OK, I will go back to the recognition menu
+
+
+            ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+            ^gotoReactivate(facialrecog)
 
 
             u3:(~yes) %recognitionRunning
