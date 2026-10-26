@@ -1,0 +1,1272 @@
+topic: ~greetingtopic()
+
+language: enu
+
+
+
+# Defining extra concepts out of words or group of words
+
+
+concept:(hi) [hi hello]
+concept:(start) [start "main menu"]
+concept:(yes) [yes OK sure yeap]
+concept:(no) [no not noon]
+concept:(repeat) [repeat]
+concept:(back) ["turn back" back]
+concept:(save) [save confirm]
+concept:(again) [again retry "try again"]
+concept:(one) [one direction]
+concept:(two) [two program project]
+concept:(three) [three history]
+concept:(four) [four for weather]
+concept:(five) [five contact]
+concept:(six) [six seeks recognition]
+concept:(seven) [seven repeat again]
+concept:(eight) [eight]
+concept:(nine) [nine]
+concept:(ten) [ten]
+concept:(eleven) [eleven]
+concept:(twelve) [twelve]
+concept:(thirteen) [thirteen]
+concept:(fourteen) [fourteen]
+concept:(fifteen) [fifteen]
+concept:(sixteen) [sixteen]
+concept:(seventeen) [seventeen]
+concept:(eighteen) [eighteen]
+concept:(nineteen) [nineteen]
+concept:(twenty) [twenty]
+concept:(twentyone) ["twenty one"]
+concept:(twentytwo) ["twenty two"]
+concept:(twentythree) ["twenty three"]
+concept:(twentyfour) ["twenty four"]
+concept:(twentyfive) ["twenty five"]
+concept:(twentysix) ["twenty six"]
+concept:(twentyseven) ["twenty seven"]
+
+
+
+
+
+
+
+# Catching inputs and triggering outputs
+
+#u:(e:onStart) $onStopped=1
+
+
+
+# Replying to speech
+
+
+
+u:(~hi) %greeting
+
+    ^call(ALMemory.raiseEvent("introductions","startPage"))
+
+    Hello welcome to Ballarat tech school I am pepper, I can help you with finding directions, giving information about the current programs or just tell you a fun fact, after I stop talking, Please press the start button or say \pau=300\ start to browse the main menu.
+
+
+
+
+
+
+
+u:(~start) %informationMenu
+
+
+
+    ^call(ALMemory.raiseEvent("introductions","mainMenu"))
+
+    Please choose the functions listed on the page by touching on the button or say the number of it.
+
+
+
+#    \pau=1000\
+
+#    one, directions.
+
+#    \pau=500\
+
+#    two, program informations.
+
+#    \pau=500\
+
+#    three, history fact of ballarat tech school.
+
+#    \pau=500\
+
+#    four, today's weather.
+
+#    \pau=600\
+
+#    five, contact details of ballarat tech school.
+
+#    \pau=600\
+
+#    six, repeat the instruction again.
+
+
+
+
+
+    #tag:directions
+
+    u1:(~one) %directionMenu
+
+
+
+        would you like directions of ballarat tech school?
+
+
+
+        u2:(~yes)%roomList
+
+            ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+            please take a look at the list of rooms available and choose one with touching on the button or speak the number of it,then I'll show you a map with directions to your room marked.
+
+
+
+            u3:(~one) %room1
+
+            This is director Office
+
+            ^call(ALMemory.raiseEvent("introductions","room1"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                \pau=1000\
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+                ^gotoReactivate(roomList)
+
+
+
+            u3:(~two) %room2
+
+            This is IT Room
+
+            ^call(ALMemory.raiseEvent("introductions","room2"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+                ^gotoReactivate(roomList)
+
+
+
+            u3:(~three) %room3
+
+            This is meeting room
+
+            ^call(ALMemory.raiseEvent("introductions","room3"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+                ^gotoReactivate(roomList)
+
+
+
+            u3:(~four) %room4
+
+            This is new energy map.
+
+            ^call(ALMemory.raiseEvent("introductions","room4"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+                ^gotoReactivate(roomList)
+
+
+
+            u3:(~five) %room5
+
+            This is Presentation Space.
+
+            ^call(ALMemory.raiseEvent("introductions","room5"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+
+
+            u3:(~six) %room6
+
+            This is Staff Room
+
+            ^call(ALMemory.raiseEvent("introductions","room6"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~seven) %room7
+
+            This is Level 1 Toilets.
+
+            ^call(ALMemory.raiseEvent("introductions","room7"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~eight) %room8
+
+            This is breakout room.
+
+            ^call(ALMemory.raiseEvent("introductions","room8"))
+
+
+
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~nine) %room9
+
+            This is Food Room.
+
+            ^call(ALMemory.raiseEvent("introductions","room9"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~ten) %room10
+
+            This is Science Prep Room.
+
+            ^call(ALMemory.raiseEvent("introductions","room10"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~eleven) %room11
+
+            This is Science Room.
+
+            ^call(ALMemory.raiseEvent("introductions","room11"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+                
+            u3:(~twelve) %room12
+
+            This is staff lunch room.
+
+            ^call(ALMemory.raiseEvent("introductions","room12"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+                
+            u3:(~thirteen) %room13
+
+            This is studio room.
+
+            ^call(ALMemory.raiseEvent("introductions","room13"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+                
+
+            u3:(~forteen) %room14
+
+            This is Level 2 Toilets.
+
+            ^call(ALMemory.raiseEvent("introductions","room14"))
+            You can say back or touch on the back button to the last menu.
+
+                u4:(~back)
+
+                OK, I will turn to the roomlist menu.
+
+                ^call(ALMemory.raiseEvent("introductions","roomlists"))
+
+
+            u3:(~back)
+
+                OK, I will turn to the main menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","welcome"))
+
+                ^gotoReactivate(informationMenu)
+
+        u2:(~no)
+
+            I hope you had fun, please enjoy your stay at the tech school, I will turn back to the main menu.
+
+
+
+            ^gotoReactivate(informationMenu)
+
+            ^call(ALMemory.raiseEvent("introductions","reset"))
+
+
+
+    #tag:program
+
+    u1:(~two) %programMenu
+
+        would you like to know current program information?
+
+        u2:(~yes) %programList
+
+            ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+            please have a look at the programs listed on the panel.And touch or speak the program you want to know.
+
+
+
+            You also can speak back of touch on the back button to the last menu.
+
+            #tag:program1
+
+            u3:(~one) %program1
+
+                ^call(ALMemory.raiseEvent("introductions","program1"))
+
+
+
+                3D Modelling the process of using advanced software to generate detailed 3D models is having an ever increasing impact on our lives. Engineers, Architects, Filmmakers, Game Designers, Healthcare Workers, Scientists and Industrial Manufacturers are but a few of the professionals using 3D modelling to increase the speed and accuracy of their work, reduce costly design errors and visualise new innovations.
+
+
+
+
+
+                you can say back to the last menu.
+
+
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+
+
+
+
+            #tag:program2
+
+            u3:(~two) %program2
+
+                ^call(ALMemory.raiseEvent("introductions","program2"))
+
+
+
+                Consciousness can be thought of as operating on a continuum, and altered states can occur naturally or be induced alcohol, anesthesia. Measuring these states usually involves methods like Electroencephalography and speed and accuracy assessments.
+
+
+
+
+
+                you can say back to the last menu.
+
+
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+
+
+
+
+            #tag:program3
+
+            u3:(~three) %program3
+
+                ^call(ALMemory.raiseEvent("introductions","program3"))
+
+
+
+                The process of automation has changed how we do business in today's world and it continues to reshape the skills and jobs that will be required in priority industry sectors, such as manufacturing, into the future.
+
+
+
+
+
+                you can say back to the last menu.
+
+
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+
+
+            #tag:program4
+
+            u3:(~four) %program4
+
+                ^call(ALMemory.raiseEvent("introductions","program4"))
+
+
+
+                The contemporary use of Australian bushfood flavours has enabled unique product development and innovation in the local food industry in recent years.
+This program merges the new with the old as AI technologies are leveraged to help students create products that lean into Australia's distinctive culinary heritage.
+
+
+
+                you can say back to the last menu.
+
+
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+
+
+            #tag:program5
+
+            u3:(~five) %program5
+
+                ^call(ALMemory.raiseEvent("introductions","program5"))
+
+
+
+                This program centre piece is a scaled, connected and functional representation of a smart city, built out of Lego with critical infrastructure and recognisable local Ballarat landmarks.
+
+                Be introduced to different clean energy sources and future energy storage options.
+
+                Learn the fundamentals of Cyber Security threats and protection techniques.
+
+                Build technical, operational and collaborative competencies in cyber security and energy system knowledge.
+
+                Develop communication and teamwork skills required in professional environments.
+
+
+
+                You can say back or touch on the back button to the last menu.
+
+
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+                    
+                    
+            u3:(~six) %program6
+
+                ^call(ALMemory.raiseEvent("introductions","program6"))
+
+
+                Students work through a series of guided tasks to create a playable 2D game in Unreal Engine learning about simple animations, health & damage, jumping, collisions, platforming, and more.
+
+                Install Epic Games and UE4.
+
+                Create your first project, from a template.
+
+                Navigate the UE4 program.
+
+                Download and import game assets.
+
+                Basic programming using UE4 blueprinting.
+                
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+                    
+            u3:(~seven) %program7
+
+                ^call(ALMemory.raiseEvent("introductions","program7"))
+
+
+                In this program, students learn the basic controls to manipulate objects in scenes, utilising in-engine video tutorials that allow them to learn at their own pace.
+
+                Learn different elements of The Unreal Engine.
+
+                Develop an understanding of game design.
+
+                Create their own game level and concept.
+                
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+
+
+            u3:(~eight) %program8
+
+                ^call(ALMemory.raiseEvent("introductions","program8"))
+
+
+                Game of Drones gives students hands on experience learning to code, test and fly drones whilst discussing what the future of drones may look like.
+
+                Understand the components of a drone.
+
+                Develop an understanding of a basic electronic circuit and how it functions to control electric motors.
+
+                Create a successful drone prototype test rig.
+
+                Automate a drone flight to complete a set mission.
+
+                Learn to use and code an Arduino microcontroller.
+                
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+                    
+                    
+
+            u3:(~nine) %program9
+
+                ^call(ALMemory.raiseEvent("introductions","program9"))
+
+
+                The Girls in STEM program is centred around "you can't be what you can't see" and provides young women with access to mentors, experiences and skill development in a focused and supported environment for two days per term across the year.
+
+                STEM related industries.
+
+                Skill development with industry.
+
+                Real world problem solving.
+
+                Study and career pathways.
+
+                Networking and connections.
+                
+
+                u4:(~back)
+
+                    back to the program list
+
+                    ^gotoReactivate(programList)
+
+                    ^call(ALMemory.raiseEvent("introductions","programMenu"))
+                    
+                    
+                    
+                    
+
+            u3:(~back)
+
+                Turn back into main menu.
+
+                ^gotoReactivate(informationMenu)
+
+                ^call(ALMemory.raiseEvent("introductions","welcome"))
+
+
+
+
+
+        u2:(~no)
+
+            I hope you had fun, please enjoy your stay at the tech school, if you need anything else please ask me after the program resets.
+
+            Turned back into main menu.
+
+            ^call(ALMemory.raiseEvent("introductions","reset"))
+
+
+
+    #tag:history
+
+    u1:(~three) %historyMenu
+
+        would you like to a historical fact about the ballarat tech school?
+
+
+
+        u2:(~yes)%historyVoice
+
+            ^call(ALMemory.raiseEvent("introductions","history"))
+
+            Our Tech School is part of the Victorian Government's commitment to make Victoria the Education State. Our educational focus is on real-world applications in a high-tech environment, with innovative STEM learning programs developed collaboratively by industry and education partners.
+
+
+
+            \pau=3000\
+
+                You can say back or touch on the back button to the last menu.
+
+
+
+            u3:(~back)
+
+                OK, I will go back to the main menu.
+
+                ^gotoReactivate(informationMenu)
+
+                ^call(ALMemory.raiseEvent("introductions","welcome"))
+
+
+
+
+
+
+
+
+
+
+
+        u2:(~no)
+
+            I hope you had fun, please enjoy your stay at the tech school, I will turn to the main menu.
+
+
+
+            ^gotoReactivate(informationMenu)
+
+            ^call(ALMemory.raiseEvent("introductions","welcome"))
+
+
+
+    #tag:weather
+
+    u1:(~four) %weather
+
+        Now I am going to check today's weather.
+
+        ^call(ALMemory.raiseEvent("introductions","weather"))
+
+
+
+
+
+        u2:(e:weatherFinished) %weatherFinished
+
+            You can say back to return to the main menu.
+
+
+
+            u3:(~back)
+
+                I will turn to the main menu.
+
+                ^gotoReactivate(informationMenu)
+
+    #tag:contact
+
+    u1:(~five)%contact
+
+        This is the contact detail of ballarat tech school
+
+
+
+        ^call(ALMemory.raiseEvent("introductions","contact"))
+
+            u2:(~back)
+
+                OK, I will go back to the main menu.
+
+                ^gotoReactivate(informationMenu)
+
+                ^call(ALMemory.raiseEvent("introductions","mainMenu"))
+
+#tag:facialrecognition
+
+
+
+    u1:(~six) %facialrecog
+
+
+
+        OK, this is facial recognition function. Are you a new user?
+
+
+
+        ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+
+
+        # ========================================
+
+        # New user
+
+        # ========================================
+
+
+
+        u2:(~yes) %newUserFlow
+
+
+
+            ^call(ALMemory.raiseEvent("introductions","newUser"))
+
+
+
+            Do you want to register your face under your name?
+
+
+
+
+
+            u3:(~yes) %registrationRunning
+
+
+
+                OK, please enter your name and press the confirm button.
+
+
+
+                ^call(ALMemory.raiseEvent("buttonback","registration_yes"))
+
+
+
+
+
+                u4:(e:faceRegistrationReady)
+
+
+
+                    I can see your face.
+
+
+
+                    You can say save, again, or back.
+
+
+
+
+
+                    u5:(~save)
+
+
+
+                        OK, I will save your face.
+
+
+
+                        ^call(ALMemory.raiseEvent("buttonback","save_face"))
+
+
+
+
+
+                    u5:(~again)
+
+
+
+                        OK, please look at the camera again.
+
+
+
+                        ^call(ALMemory.raiseEvent("buttonback","registration_again"))
+
+
+
+
+
+                    u5:(~back)
+
+
+
+                        OK, I will return to the facial recognition menu.
+
+
+
+                        ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+                        ^gotoReactivate(facialrecog)
+
+
+
+
+
+                    
+
+
+
+
+                    u5:(e:faceRegistrationFailed)
+
+
+
+                        Sorry, I could not save your face.
+
+
+
+                        Please say again to try again, or say back.
+
+
+
+
+
+                        u6:(~again)
+
+
+
+                            OK, please look at the camera again.
+
+
+
+                            ^call(ALMemory.raiseEvent("buttonback","registration_again"))
+
+
+
+
+
+                        u6:(~back)
+
+
+
+                            OK, I will return to the facial recognition menu.
+
+
+
+                            ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+                            ^gotoReactivate(facialrecog)
+
+
+
+
+
+            u3:(~no)
+
+
+
+                OK, I will return to the facial recognition menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+                ^gotoReactivate(facialrecog)
+
+
+
+
+
+            u3:(~back)
+
+
+
+                OK, I will return to the facial recognition menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+                ^gotoReactivate(facialrecog)
+
+
+
+
+
+
+
+        # ========================================
+
+        # Existing user
+
+        # ========================================
+
+
+
+        u2:(~no) %existingUserFlow
+
+
+
+            Do you want to be recognized?
+
+
+
+            ^call(ALMemory.raiseEvent("introductions","exsistedUser"))
+
+
+
+
+
+            u3:(~yes) %recognitionRunning
+
+
+
+                OK, please look at the camera.
+
+
+
+                ^call(ALMemory.raiseEvent("buttonback","recognition_yes"))
+
+
+
+            u3:(~back)
+
+
+
+                OK, I will return to the facial recognition menu.
+
+
+
+                ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+                ^gotoReactivate(facialrecog)
+
+
+
+
+
+
+
+        # ========================================
+
+        # Back to main menu
+
+        # ========================================
+
+
+
+        u2:(~back)
+
+
+
+            OK, I will turn back to the main menu.
+
+
+
+            ^call(ALMemory.raiseEvent("introductions","mainMenu"))
+
+
+
+            ^gotoReactivate(informationMenu)
+
+
+
+
+    #tag:repeat
+
+    u1:(~seven)%repeat
+
+        Now I am going to repeat the voice instructions again.
+
+        \pau=1000\
+
+        one, directions.
+
+        \pau=500\
+
+        two, program informations.
+
+        \pau=500\
+
+        three, history fact of ballarat tech school.
+
+        \pau=500\
+
+        four, today's weather.
+
+        \pau=500\
+
+        five, contact details of ballarat tech school.
+
+        \pau=500\
+
+        six, facial recoginition function
+
+        \pau=500\
+
+        seven, repeat the precise voice instruction.
+
+        ^call(ALMemory.raiseEvent("introductions","mainMenu"))
+
+        ^gotoReactivate(informationMenu)
+
+
+
+
+# ========================================
+# Face recognition result outputs
+# ========================================
+
+dynamic: recognized_face_name
+
+u:(face recognized _~recognized_face_name) %faceRecognitionSuccessOutput
+    Recognition successful. Welcome $1
+
+        u1:(~back)
+
+
+
+            OK, I will return to the facial recognition menu.
+            ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+            ^gotoReactivate(facialrecog)
+
+# ========================================
+# Face registration success output
+# ========================================
+
+dynamic: registered_face_name
+
+u:(face registration successful _~registered_face_name) %faceRegistrationSuccessOutput
+    I have remembered you, $1.
+
+
+
+
+
+    proposal: %faceRecognitionUnknownOutput Sorry, I could not recognize you. You can say again or back.
+
+
+
+        u1:(~again)
+
+
+
+            OK, please look at the camera again.
+
+
+
+            ^call(ALMemory.raiseEvent("buttonback","recognition_again"))
+
+
+
+
+
+        u1:(~back)
+
+
+
+            OK, I will return to the facial recognition menu.
+
+
+
+            ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+            ^gotoReactivate(facialrecog)
+
+
+
+
+
+
+
+## ========================================
+
+## GLOBAL FACE RECOGNITION EVENTS
+
+## ========================================
+
+
+
+#u:(e:faceRecognitionSuccess) %faceRecognized
+
+
+
+#    Welcome, $faceRecognitionSuccess.
+
+
+
+#    You can say back to return to the facial recognition menu.
+
+
+
+#    u1:(~back)
+
+
+
+#        OK, I will return to the facial recognition menu.
+
+
+
+#        ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+#        ^gotoReactivate(facialrecog)
+
+
+
+
+
+#u:(e:faceRecognitionUnknown) %faceUnknown
+
+
+
+#    Sorry, I could not recognize you.
+
+
+
+#    You can say again or back.
+
+
+
+#    u1:(~again)
+
+
+
+#        OK, please look at the camera again.
+
+
+
+#        ^call(ALMemory.raiseEvent("buttonback","recognition_again"))
+
+
+
+
+
+#    u1:(~back)
+
+
+
+#        OK, I will return to the facial recognition menu.
+
+
+
+#        ^call(ALMemory.raiseEvent("introductions","facialMenu"))
+
+
+
+#        ^gotoReactivate(facialrecog)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

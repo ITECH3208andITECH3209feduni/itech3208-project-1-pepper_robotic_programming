@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Face Registration</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
+</head>
+
+<body>
+
+<div class="registration">
+
+    <h1>Nice to meet you!</h1>
+
+    <p>Please enter your name</p>
+
+    <input
+        id="visitorName"
+        type="text"
+        placeholder="Your name"
+    >
+
+    <button onclick="submitName()">
+        Continue
+    </button>
+
+</div>
+
+<script>
+
+function submitName() {
+
+    var name =
+        document.getElementById(
+            "visitorName"
+        ).value;
+
+    name = name.trim();
+
+    if (name.length === 0) {
+        return;
+    }
+
+    // 发送给 Pepper
+    ALMemory.raiseEvent(
+        "VisitorRegistration/Name",
+        name
+    );
+}
+
+</script>
+
+</body>
+
+</html>

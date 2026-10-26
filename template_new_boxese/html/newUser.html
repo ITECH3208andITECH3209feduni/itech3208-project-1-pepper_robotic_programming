@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>New User</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="/libs/qimessaging/2/qimessaging.js"></script>
+  <script src="tag.js"></script>
+  <script src="camera.js"></script>
+</head>
+
+
+<body>
+
+  <h1 class="face-page-title">
+    New user, do you want to start to register your face?
+  </h1>
+
+
+  <div class="faceWindow">
+
+    <canvas id="cameraFeed"></canvas>
+
+    <div class="faceGuide"></div>
+
+    <div id="faceStatus">
+      Camera is starting...
+    </div>
+
+  </div>
+
+
+  <div class="nameInputArea" id="nameInputArea">
+
+    <input
+      type="text"
+      id="registrationName"
+      placeholder="Enter your name"
+      autocomplete="off"
+    >
+
+    <button
+      type="button"
+      onclick="submitRegistrationName()"
+    >
+      Confirm
+    </button>
+
+  </div>
+
+
+  <div
+    class="buttonArea"
+    id="saveArea"
+    style="display:none;"
+  >
+
+    <button
+      type="button"
+      onclick="goToDialogTag('save_face')"
+    >
+      Save
+    </button>
+
+
+    <button
+      type="button"
+      onclick="goToDialogTag('registration_again')"
+    >
+      Again
+    </button>
+
+  </div>
+
+
+  <div class="buttonArea">
+
+    <button
+      type="button"
+      onclick="goToDialogTag('registration_yes')"
+    >
+      Start Registration
+    </button>
+
+
+    <button
+      type="button"
+      onclick="goToDialogTag('facialMenu')"
+    >
+      Back
+    </button>
+
+  </div>
+
+
+  <div id="status" style="display:none;"></div>
+
+</body>
+
+</html>

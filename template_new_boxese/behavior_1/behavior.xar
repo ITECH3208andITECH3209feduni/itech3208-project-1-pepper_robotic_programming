@@ -1,0 +1,2278 @@
+<?xml version="1.0" encoding="UTF-8" ?><ChoregrapheProject xmlns="http://www.aldebaran-robotics.com/schema/choregraphe/project.xsd" xar_version="3"><Box name="root" id="-1" localization="8" tooltip="Root box of Choregraphe&apos;s behavior. Highest level possible." x="0" y="0"><bitmap>media/images/box/root.png</bitmap><script language="4"><content><![CDATA[]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Timeline enable="0"><BehaviorLayer name="behavior_layer1"><BehaviorKeyframe name="keyframe1" index="1"><Diagram scale="84.0896"><Box name="Say" id="1" localization="8" tooltip="Say some text. The text can be localized." x="407" y="42"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="97" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Hello, welcome to ballarat tech school." default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Say (8)" id="4" localization="8" tooltip="Say some text. The text can be localized." x="1549" y="667"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+        while( self.bIsRunning ):
+            time.sleep( 0.2 )
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += self.getParameter("Text")
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" /><Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" /><Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" /><Parameter name="Text" inherits_from_parent="0" content_type="5" value="Hello" default_value="" tooltip="The text you want to say. Don&apos;t forget to translate it!" id="7" /></Box><Box name="Set Language" id="14" localization="8" tooltip="Set the language of your robot for the current application. Your robot will speak and understand the selected language as long as your application has focus. Any following call to ALSpeechRecognition (Speech Reco. box for instance), ALTextToSpeech (Say box for instance) or ALDialog will use this language.&#x0A;" x="545" y="55"><bitmap>media/images/box/interaction/say.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+
+    def onLoad(self):
+        try:
+            self.tts = ALProxy("ALTextToSpeech")
+        except:
+            self.logger.warn("ALTextToSpeech is not available, language setting cannot be applied to speech")
+            self.tts = None
+
+        try:
+            self.asr = ALProxy("ALSpeechRecognition")
+        except:
+            self.logger.warn("ALSpeechRecognition is not available, language setting cannot be applied to recognition")
+            self.asr = None
+
+        try:
+            self.dialog = ALProxy("ALDialog")
+        except:
+            self.logger.warn("ALDialog is not available, language setting cannot be applied to dialog")
+            self.dialog = None
+
+    def onInput_onSet(self):
+        lang = self.getParameter("Language")
+        try:
+            if self.asr:
+                self.asr.setLanguage( self.getParameter("Language") )
+            if self.tts:
+                self.tts.setLanguage( self.getParameter("Language") )
+            if self.dialog:
+                self.dialog.setLanguage( self.getParameter("Language") )
+            if self.tts is None and self.asr is None and self.dialog is None:
+                raise RuntimeError("Cannot set language: neither ALTextToSpeech nor ALSpeechRecognition nor ALDialog is available.")
+            self.onReady()
+        except:
+            error = "Language " + lang + " cannot be set."
+            self.logger.warn(error)
+            self.onError(error)]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onSet" type="1" type_size="1" nature="1" inner="0" tooltip="The data is set when a signal is received on this input." id="2" /><Output name="onReady" type="1" type_size="1" nature="2" inner="0" tooltip="Signal sent when the data has been set." id="3" /><Output name="onError" type="3" type_size="1" nature="2" inner="0" tooltip="Error output:&#x0A;- triggered if the language asked cannot be set" id="4" /><Parameter name="Language" inherits_from_parent="0" content_type="3" value="English" default_value="English" custom_choice="1" tooltip="Set the language the robot speaks and understands." id="5"><Choice value="Arabic" /><Choice value="Brazilian" /><Choice value="Chinese" /><Choice value="Czech" /><Choice value="Danish" /><Choice value="Dutch" /><Choice value="English" /><Choice value="Finnish" /><Choice value="French" /><Choice value="German" /><Choice value="Greek" /><Choice value="Italian" /><Choice value="Japanese" /><Choice value="Korean" /><Choice value="MandarinTaiwan" /><Choice value="Norwegian" /><Choice value="Polish" /><Choice value="Portuguese" /><Choice value="Russian" /><Choice value="Spanish" /><Choice value="Swedish" /><Choice value="Turkish" /></Parameter><Resource name="Speech" type="Lock" timeout="0" /></Box><Box name="greetings" id="16" localization="8" tooltip="" x="962" y="41"><dialogFile>../greetingtopic/greetingtopic.dlg</dialogFile><bitmap>media/images/box/box-dialog.png</bitmap><script language="4"><content><![CDATA[]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /></Box><Box name="functions" id="17" localization="8" tooltip="" x="629" y="174"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[
+from naoqi import ALProxy
+import time
+
+class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+    # ========================================
+    # Face recognition state
+    # ========================================
+
+        self.faceMode = None
+
+        self.recognitionRunning = False
+        self.registrationRunning = False
+
+        self.registrationName = ""
+
+        self.lastRecognizedName = ""
+
+    def onLoad(self):
+
+        # ========================================
+        # NAOqi proxies
+        # ========================================
+
+        self.memory = ALProxy("ALMemory")
+        self.tablet = ALProxy("ALTabletService")
+        self.tts = ALProxy("ALTextToSpeech")
+        self.dialog = ALProxy("ALDialog")
+        self.faceDetection = ALProxy("ALFaceDetection")
+
+
+        # ========================================
+        # DEBUG DIALOG
+        # ========================================
+
+        try:
+
+            topics = self.dialog.getActivatedTopics()
+
+            self.logger.info(
+                "Activated topics on load: "
+                + str(topics)
+            )
+
+        except Exception as error:
+
+            self.logger.error(
+                "getActivatedTopics error: "
+                + str(error)
+            )
+
+
+        try:
+
+            focus = self.dialog.getFocus()
+
+            self.logger.info(
+                "Current dialog focus on load: "
+                + str(focus)
+            )
+
+        except Exception as error:
+
+            self.logger.error(
+                "getFocus error: "
+                + str(error)
+            )
+
+
+        # ========================================
+        # Start ALFaceDetection
+        # ========================================
+
+        try:
+
+            self.faceDetection.subscribe(
+                self.getName(),
+                500,
+                0.0
+            )
+
+            self.logger.info(
+                "ALFaceDetection subscribed successfully."
+            )
+
+        except Exception as error:
+
+            self.logger.error(
+                "ALFaceDetection subscribe error: "
+                + str(error)
+            )
+
+
+        # ========================================
+        # Subscribe to ALMemory events
+        # ========================================
+
+        self.memory.subscribeToEvent(
+            "introductions",
+            self.getName(),
+            "onVoiceEvent"
+        )
+
+        self.memory.subscribeToEvent(
+            "buttonback",
+            self.getName(),
+            "onTabletEvent"
+        )
+
+        self.memory.subscribeToEvent(
+            "weatherData",
+            self.getName(),
+            "onWeatherEvent"
+        )
+
+        self.memory.subscribeToEvent(
+            "FaceDetected",
+            self.getName(),
+            "onFaceDetected"
+        )
+    def onUnload(self):
+        self.memory.unsubscribeToEvent(
+            "introductions",
+            self.getName()
+        )
+
+        self.memory.unsubscribeToEvent(
+            "buttonback",
+            self.getName()
+        )
+
+        self.memory.unsubscribeToEvent(
+            "weatherData",
+            self.getName()
+        )
+
+#        self.memory.unsubscribeToEvent(
+#            "ReceptionAnswer",
+#            self.getName()
+#        )
+
+        try:
+
+            self.memory.unsubscribeToEvent(
+                "FaceDetected",
+                self.getName()
+            )
+
+        except Exception as error:
+
+            self.logger.warning(
+                "FaceDetected unsubscribe error: "
+                + str(error)
+            )
+
+
+        self.recognitionRunning = False
+        self.registrationRunning = False
+        self.faceMode = None
+
+        try:
+
+            self.faceDetection.unsubscribe(
+                self.getName()
+            )
+
+            self.logger.info(
+                "ALFaceDetection unsubscribed."
+            )
+
+        except Exception as error:
+
+            self.logger.warning(
+                "ALFaceDetection unsubscribe error: "
+                + str(error)
+            )
+
+
+    def onVoiceEvent(self, key, value, message):
+        print "Event:", key
+        print "Value:", value
+
+        if value == "startPage":
+            self.showPage("start.html")
+
+        elif value == "mainMenu":
+            self.showPage("mainMenu.html")
+
+        elif value == "roomlists":
+            self.showPage("roomlists.html")
+
+        elif value == "programMenu":
+            self.showPage("programs/programs.html")
+
+        elif value == "history":
+            self.showPage("history.html")
+
+        elif value == "weather":
+            self.showPage("weather.html")
+
+        elif value == "contact":
+            self.showPage("contact.html")
+
+        elif value == "facialMenu":
+            self.showPage("facialMenu.html")
+
+
+
+
+
+        # ========================================
+        # Rooms
+        # ========================================
+
+
+        elif value == "room1":
+            self.showPage("room.html?title=Director%20Office&img=images/director-office.jpg")
+
+        elif value == "room2":
+            self.showPage("room.html?title=IT%20Room&img=images/it-room.jpg")
+
+        elif value == "room3":
+            self.showPage("room.html?title=Meeting%20Room&amp;img=images/meeting-room.jpg")
+
+        elif value == "room4":
+            self.showPage("room.html?title=New%20Energy%20Map&amp;img=images/new-energy-map.jpg")
+
+        elif value == "room5":
+            self.showPage("room.html?title=Presentation%20Space&amp;img=images/presentation-space.jpg")
+
+        elif value == "room6":
+            self.showPage("room.html?title=Staff%20Room&amp;img=images/staff-room.jpg")
+
+        elif value == "room7":
+            self.showPage("room.html?title=Level%201%20Toilets&amp;img=images/Here-are-directions-to-the-level-1-toilets.jpg")
+
+
+        # ========================================
+        # Programs
+        # ========================================
+
+        # Row 1
+
+        elif value == "program1":
+            self.showPage("programs/3DModelling.html")
+
+        elif value == "program2":
+            self.showPage("programs/Automation.html")
+
+        elif value == "program3":
+            self.showPage("programs/BoysinSTEM.html")
+
+        elif value == "program4":
+            self.showPage("programs/Bushfood.html")
+
+
+        # Row 2
+
+        elif value == "program5":
+            self.showPage("programs/CyberCity.html")
+
+        elif value == "program6":
+            self.showPage("programs/GameDesignOnline.html")
+
+        elif value == "program7":
+            self.showPage("programs/GameMaker.html")
+
+        elif value == "program8":
+            self.showPage("programs/GameofDrones.html")
+
+
+        # Row 3
+
+        elif value == "program9":
+            self.showPage("programs/GirlsinSTEM.html")
+
+        elif value == "program10":
+            self.showPage("programs/KoorieMotion.html")
+
+        elif value == "program11":
+            self.showPage("programs/MolecularGenetics.html")
+
+        elif value == "program12":
+            self.showPage("programs/PCBuilder.html")
+
+
+        # Row 4
+
+        elif value == "program13":
+            self.showPage("programs/PerceptualDistortion.html")
+
+        elif value == "program14":
+            self.showPage("programs/PeterDoherty.html")
+
+        elif value == "program15":
+            self.showPage("programs/Photosynthesis.html")
+
+        elif value == "program16":
+            self.showPage("programs/Prototyping.html")
+
+
+        # Row 5
+
+        elif value == "program17":
+            self.showPage("programs/VCE%20Psychology.html")
+
+        elif value == "program18":
+            self.showPage("programs/Questions%20in%20Science.html")
+
+        elif value == "program19":
+            self.showPage("programs/Renewables.html")
+
+        elif value == "program20":
+            self.showPage("programs/RobotMissions.html")
+
+
+        # Row 6
+
+        elif value == "program21":
+            self.showPage("programs/SoilScience.html")
+
+        elif value == "program22":
+            self.showPage("programs/STEMAcademies.html")
+
+        elif value == "program23":
+            self.showPage("programs/STEMinAction.html")
+
+        elif value == "program24":
+            self.showPage("programs/STEMIsland.html")
+
+        # ========================================
+        # facial recognition
+        # ========================================
+        elif value == "exsistedUser":
+            self.showPage("exsistedUser.html")
+
+        elif value == "newUser":
+            self.showPage("newUser.html")
+
+
+
+    def onTabletEvent(self, key, value, message):
+
+        print "Back Event:", key
+        print "Back to tag:", value
+
+        tag_name = str(value)
+
+        # ========================================
+        # Main menu
+        # ========================================
+
+        if tag_name == "informationMenu":
+
+
+
+            self.dialog.gotoTag(
+                "informationMenu",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "start":
+
+            self.dialog.gotoTag(
+                "informationMenu",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "roomList":
+
+            self.dialog.gotoTag(
+                "roomList",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "programList":
+
+            self.showPage(
+                "programs/programs.html"
+            )
+
+            self.dialog.gotoTag(
+                "programList",
+                "greetingtopic"
+            )
+
+        elif tag_name == "historyMenu":
+
+            self.showPage(
+                "history.html"
+            )
+
+            self.dialog.gotoTag(
+                "historyVoice",
+                "greetingtopic"
+            )
+
+        elif tag_name == "weather":
+
+            self.showPage(
+                "weather.html"
+            )
+
+            self.dialog.gotoTag(
+                "weather",
+                "greetingtopic"
+            )
+
+        elif tag_name == "contact":
+
+            self.showPage(
+                "contact.html"
+            )
+
+            self.dialog.gotoTag(
+                "contact",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "facialrecog":
+
+            self.showPage(
+                "facialMenu.html"
+            )
+
+            self.dialog.gotoTag(
+                "facialrecog",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "repeat":
+
+            self.dialog.gotoTag(
+                "informationMenu",
+                "greetingtopic"
+            )
+
+
+
+
+        # ========================================
+        # Programs
+        # ========================================
+
+        elif tag_name.startswith("program"):
+
+            program_pages = {
+                "program1":  "programs/3D%20Modelling.html",
+                "program2":  "programs/Automation.html",
+                "program3":  "programs/BoysinSTEM.html",
+                "program4":  "programs/Bushfood.html",
+                "program5":  "programs/CyberCity.html",
+                "program6":  "programs/GameDesignOnline.html",
+                "program7":  "programs/GameMaker.html",
+                "program8":  "programs/GameofDrones.html",
+                "program9":  "programs/GirlsinSTEM.html",
+                "program10": "programs/KoorieMotion.html",
+                "program11": "programs/MolecularGenetics.html",
+                "program12": "programs/PCBuilder.html",
+                "program13": "programs/PerceptualDistortion.html",
+                "program14": "programs/PeterDoherty.html",
+                "program15": "programs/Photosynthesis.html",
+                "program16": "programs/Prototyping.html",
+                "program17": "programs/VCE%20Psychology.html",
+                "program18": "programs/Questions%20in%20Science.html",
+                "program19": "programs/Renewables.html",
+                "program20": "programs/RobotMissions.html",
+                "program21": "programs/SoilScience.html",
+                "program22": "programs/STEMAcademies.html",
+                "program23": "programs/STEMinAction.html",
+                "program24": "programs/STEMIsland.html",
+                "program25": "programs/STEMShowdown.html",
+                "program26": "programs/Transformation.html",
+                "program27": "programs/VCE%20Psycology.html"
+            }
+
+            if tag_name in program_pages:
+
+                # Change tablet page
+                self.showPage(
+                    program_pages[tag_name]
+                )
+
+                # Change dialog position
+                try:
+
+                    self.dialog.gotoTag(
+                        tag_name,
+                        "greetingtopic"
+                    )
+
+                except Exception as error:
+
+                    self.logger.warning(
+                        "Dialog tag not found: "
+                        + tag_name
+                        + " | "
+                        + str(error)
+                    )
+
+            else:
+
+                self.logger.warning(
+                    "Unknown program: "
+                    + tag_name
+                )
+
+
+        # ========================================
+        # Rooms
+        # ========================================
+
+        elif tag_name == "roomlist":
+
+            self.showPage(
+                "roomlists.html"
+            )
+
+            self.dialog.gotoTag(
+                "roomList",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "room1":
+
+            self.dialog.gotoTag(
+                "room1",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "room2":
+
+            self.dialog.gotoTag(
+                "room2",
+                "greetingtopic"
+            )
+
+
+        elif tag_name == "room3":
+
+            self.dialog.gotoTag(
+                "room3",
+                "greetingtopic"
+            )
+
+
+
+
+        # ========================================
+        # Facial Recognition
+        # ========================================
+
+        elif tag_name == "recognition_yes":
+
+            self.logger.info(
+                "Tablet requested face recognition."
+            )
+
+            # ========================================
+            # CHECK DIALOG STATE AT THIS MOMENT
+            # ========================================
+
+            try:
+
+                topics = self.dialog.getActivatedTopics()
+
+                self.logger.info(
+                    "Activated topics BEFORE event: "
+                    + str(topics)
+                )
+
+                focus = self.dialog.getFocus()
+
+                self.logger.info(
+                    "Dialog focus BEFORE event: "
+                    + str(focus)
+                )
+
+            except Exception as error:
+
+                self.logger.error(
+                    "Dialog state check error: "
+                    + str(error)
+                )
+
+
+
+
+
+            # ========================================
+            # START FACE RECOGNITION
+            # ========================================
+
+            self.startRecognition()
+
+
+        elif tag_name == "registration_yes":
+
+            self.logger.info(
+                "Tablet requested face registration."
+            )
+
+            self.startRegistration()
+
+
+        elif tag_name.startswith("register_name|"):
+
+            try:
+
+                parts = tag_name.split("|", 1)
+
+                if len(parts) < 2:
+                    return
+
+
+                name = parts[1].strip()
+
+
+                if name == "":
+
+                    self.memory.raiseEvent(
+                        "faceStatus",
+                        "name_error"
+                    )
+
+                    return
+
+
+                self.registrationName = name
+
+                self.faceMode = "registration"
+
+                self.registrationRunning = True
+
+
+                self.faceDetection.setTrackingEnabled(
+                    True
+                )
+
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "looking"
+                )
+
+
+                self.logger.info(
+                    "Registration name received: "
+                    + self.registrationName
+                )
+
+
+            except Exception as error:
+
+                self.logger.error(
+                    "register_name error: "
+                    + str(error)
+                )
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "error"
+                )
+
+
+        elif tag_name == "save_face":
+
+            self.saveRegisteredFace()
+
+        elif tag_name == "registration_again":
+
+            self.logger.info(
+                "Retrying face registration."
+            )
+
+            self.retryRegistration()
+
+
+        elif tag_name == "facialMenu":
+
+            self.logger.info(
+                "Returning to facial recognition menu."
+            )
+
+            self.stopFaceProcess()
+
+            self.showPage(
+                "facialMenu.html"
+            )
+
+            self.memory.raiseEvent(
+                "faceReturnMenu",
+                True
+            )
+
+        elif tag_name == "recognition_again":
+
+            self.logger.info(
+                "Retrying face recognition."
+            )
+
+            self.startRecognition()
+
+
+
+
+
+        # ========================================
+        # Unknown
+        # ========================================
+
+        else:
+
+            print "Unknown tag:", tag_name
+
+
+    def onInput_askRecognition(self):
+
+        self.logger.info(
+            "Starting ask recognition dialog"
+            )
+
+        try:
+            self.dialog.gotoTag(
+                "askRecognition",
+                "askrecognition"
+            )
+
+        except Exception as error:
+            self.logger.error(
+                "askRecognition error: "
+                + str(error)
+            )
+
+
+#    def onReceptionAnswer(self, key, value, message):
+
+#        answer = str(value).strip().lower()
+
+#        self.logger.info(
+#            "ReceptionAnswer received: " + answer
+#        )
+
+#    # ========================================
+#    # 1. Ask face recognition
+#    # ========================================
+
+#        if answer == "recognition_yes":
+
+#            self.logger.info(
+#                "User wants face recognition."
+#            )
+
+#            self.recognitionYes()
+
+
+#        elif answer == "recognition_no":
+
+#            self.logger.info(
+#                "User does not want face recognition."
+#            )
+
+#            self.recognitionNo()
+
+
+#    # ========================================
+#    # 2. Ask face registration
+#    # ========================================
+
+#        elif answer == "registration_yes":
+
+#            self.logger.info(
+#                "User wants to register face."
+#            )
+
+#            self.registrationYes()
+
+
+#        elif answer == "registration_no":
+
+#            self.logger.info(
+#                "User does not want to register face."
+#            )
+
+#            self.registrationNo()
+
+
+#    # ========================================
+#    # 3. Ask recognition again
+#    # ========================================
+
+#        elif answer == "again_yes":
+
+#            self.logger.info(
+#                "User wants recognition again."
+#            )
+
+#            self.recognizeAgainYes()
+
+
+#        elif answer == "again_no":
+
+#            self.logger.info(
+#                "User does not want recognition again."
+#            )
+
+#            self.recognizeAgainNo()
+
+
+    # ========================================
+    # Unknown value
+    # ========================================
+
+#        else:
+
+#            self.logger.warning(
+#                "Unknown ReceptionAnswer: " + answer
+#            )
+
+
+
+
+    def onWeatherEvent(self, key, value, message):
+
+        self.logger.info(
+            "========== WEATHER EVENT START =========="
+        )
+
+        # STEP 1
+        self.logger.info(
+            "STEP 1: onWeatherEvent triggered"
+        )
+
+        self.logger.info(
+            "Event key: " + str(key)
+        )
+
+        self.logger.info(
+            "Received value: " + str(value)
+        )
+
+
+        try:
+
+            # STEP 2
+            self.logger.info(
+                "STEP 2: Converting value to string"
+            )
+
+            weatherData = str(value)
+
+            self.logger.info(
+                "weatherData = " + weatherData
+            )
+
+
+            # STEP 3
+            self.logger.info(
+                "STEP 3: Splitting weather data"
+            )
+
+            parts = weatherData.split("|")
+
+            self.logger.info(
+                "Number of parts = " + str(len(parts))
+            )
+
+
+            # Check data
+            if len(parts) < 2:
+
+                self.logger.error(
+                    "ERROR: Invalid weather data"
+                )
+
+                self.logger.error(
+                    "Expected format: Weather|Temperature"
+                )
+
+                return
+
+
+            # STEP 4
+            self.logger.info(
+                "STEP 4: Reading weather value"
+            )
+
+            weather = parts[0]
+
+            self.logger.info(
+                "Weather = " + weather
+            )
+
+
+            # STEP 5
+            self.logger.info(
+                "STEP 5: Reading temperature value"
+            )
+
+            temperature = parts[1]
+
+            self.logger.info(
+                "Temperature = " + temperature
+            )
+
+
+            # STEP 6
+            self.logger.info(
+                "STEP 6: Creating TTS text"
+            )
+
+            text = (
+                "Today's weather is "
+                + weather
+                + ". The temperature is "
+                + temperature
+                + " degrees Celsius."
+
+            )
+
+            self.logger.info(
+                "TTS text = " + text
+            )
+
+
+            # STEP 7
+            self.logger.info(
+                "STEP 7: Calling ALTextToSpeech.say()"
+            )
+
+            self.tts.say(text)
+
+
+            # STEP 8
+            self.logger.info(
+                "STEP 8: TTS completed successfully"
+            )
+
+            self.memory.raiseEvent(
+                "weatherFinished",
+                True
+            )
+
+
+        except Exception as error:
+
+            self.logger.error(
+                "WEATHER EVENT ERROR: "
+                + str(error)
+            )
+
+
+        self.logger.info(
+            "========== WEATHER EVENT END =========="
+        )
+
+    # ========================================
+    # Start new user face registration
+    # ========================================
+
+    # ========================================
+    # Start existing user face recognition
+    # ========================================
+
+    def startRecognition(self):
+
+        self.logger.info(
+            "========== START FACE RECOGNITION =========="
+        )
+
+        try:
+
+            self.faceMode = "recognition"
+
+            self.recognitionRunning = True
+            self.registrationRunning = False
+
+            self.lastRecognizedName = ""
+
+
+            # Enable Pepper recognition
+            self.faceDetection.setRecognitionEnabled(
+                True
+            )
+
+
+            # Enable face tracking
+            self.faceDetection.setTrackingEnabled(
+                True
+            )
+
+
+            self.logger.info(
+                "ALFaceDetection recognition enabled."
+            )
+
+
+            # Update webpage status
+            self.memory.raiseEvent(
+                "faceStatus",
+                "looking"
+            )
+
+
+            self.logger.info(
+                "Waiting for FaceDetected event..."
+            )
+
+
+        except Exception as error:
+
+            self.recognitionRunning = False
+
+            self.logger.error(
+                "startRecognition error: "
+                + str(error)
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+    # ========================================
+    # Start new user face registration
+    # ========================================
+
+    def startRegistration(self):
+
+        self.logger.info(
+            "========== START FACE REGISTRATION =========="
+        )
+
+        try:
+
+            self.faceMode = "registration"
+
+            self.registrationRunning = True
+            self.recognitionRunning = False
+
+            self.registrationName = ""
+
+
+            # We only track the face for now.
+            # DO NOT call learnFace() yet.
+            self.faceDetection.setTrackingEnabled(
+                True
+            )
+
+
+            self.logger.info(
+                "Face registration mode started."
+            )
+
+
+            # Tell webpage that next step is entering name
+            self.memory.raiseEvent(
+                "faceStatus",
+                "enter_name"
+            )
+
+
+        except Exception as error:
+
+            self.registrationRunning = False
+
+            self.logger.error(
+                "startRegistration error: "
+                + str(error)
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+
+    # ========================================
+    # Process existing user recognition
+    # ========================================
+
+    def processRecognitionResult(self, faces):
+
+        try:
+
+            recognizedName = ""
+            recognitionScore = 0.0
+
+            for face in faces:
+
+                try:
+
+                    # FaceDetected normally contains:
+                    # face[0] = shape information
+                    # face[1] = extra information
+                    #
+                    # extraInfo[1] = recognition score
+                    # extraInfo[2] = recognized name
+
+                    if len(face) < 2:
+                        continue
+
+                    extraInfo = face[1]
+
+                    if extraInfo is None:
+                        continue
+
+                    if len(extraInfo) < 3:
+                        continue
+
+                    score = extraInfo[1]
+                    name = extraInfo[2]
+
+                    if name is None:
+                        continue
+
+                    name = str(name).strip()
+
+                    try:
+                        scoreValue = float(score)
+
+                    except Exception:
+                        scoreValue = 0.0
+
+                    self.logger.info(
+                        "Recognition candidate: "
+                        + name
+                        + " score="
+                        + str(scoreValue)
+                    )
+
+                    if (
+                        name != ""
+                        and scoreValue > recognitionScore
+                    ):
+                        recognizedName = name
+                        recognitionScore = scoreValue
+
+                except Exception as error:
+
+                    self.logger.warning(
+                        "Unable to parse one face: "
+                        + str(error)
+                    )
+
+            # ========================================
+            # Recognized
+            # ========================================
+
+            if recognizedName != "":
+
+                # Stop FIRST to avoid repeated recognition
+                self.recognitionRunning = False
+                self.faceMode = None
+
+                self.lastRecognizedName = recognizedName
+
+                self.logger.info(
+                    "Recognized user: "
+                    + recognizedName
+                )
+
+                try:
+                    self.faceDetection.setTrackingEnabled(
+                        False
+                    )
+
+                    self.faceDetection.setRecognitionEnabled(
+                        False
+                    )
+
+                except Exception as error:
+
+                    self.logger.warning(
+                        "Could not stop recognition: "
+                        + str(error)
+                    )
+
+
+                # Update webpage
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "recognized|"
+                    + recognizedName
+                )
+
+
+
+
+                self.logger.info(
+                    "Sending recognized name to Dialog: "
+                    + recognizedName
+                )
+
+                try:
+
+                    # Put the recognized name into the QiChat dynamic concept
+                    self.dialog.setConcept(
+                        "recognized_face_name",
+                        "enu",
+                        [recognizedName]
+                    )
+
+                    # Simulate the Dialog input
+                    self.dialog.forceInput(
+                        "face recognized " + recognizedName
+                    )
+
+                    self.logger.info(
+                        "Dialog recognition output triggered for: "
+                        + recognizedName
+                    )
+
+                except Exception as error:
+
+                    self.logger.error(
+                        "Could not send recognized name to Dialog: "
+                        + str(error)
+                    )
+            else:
+
+                self.recognitionRunning = False
+                self.faceMode = None
+
+                self.logger.info(
+                    "Face detected but user unknown."
+                )
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "unknown"
+                )
+                try:
+
+                    self.dialog.gotoTag(
+                        "faceRecognitionUnknownOutput",
+                        "greetingtopic"
+                    )
+
+                except Exception as error:
+
+                    self.logger.error(
+                        "Could not trigger recognition failure dialog: "
+                        + str(error)
+                    )
+
+
+        except Exception as error:
+
+            self.logger.error(
+                "processRecognitionResult error: "
+                + str(error)
+            )
+
+            self.recognitionRunning = False
+            self.faceMode = None
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+
+        # ========================================
+        # Process registration face
+        # ========================================
+
+    def processRegistrationFace(self, faces):
+
+        try:
+
+            if len(faces) == 0:
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "looking"
+                )
+
+                return
+
+
+            if self.registrationName == "":
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "enter_name"
+                )
+
+                return
+
+
+            self.logger.info(
+                "Registration face detected for: "
+                + self.registrationName
+            )
+
+
+            # Stop repeated FaceDetected processing
+            self.registrationRunning = False
+
+
+            # Tell webpage
+            self.memory.raiseEvent(
+                "faceStatus",
+                "face_ready|"
+                + self.registrationName
+            )
+
+            self.memory.raiseEvent(
+                "faceRegistrationReady",
+                self.registrationName
+            )
+
+
+
+
+        except Exception as error:
+
+            self.logger.error(
+                "processRegistrationFace error: "
+                + str(error)
+            )
+
+    # ========================================
+    # Save registered face
+    # ========================================
+
+    def saveRegisteredFace(self):
+
+        self.logger.info(
+            "========== SAVE REGISTERED FACE =========="
+        )
+
+        try:
+
+            if self.registrationName == "":
+
+                self.logger.warning(
+                    "Cannot save face: registrationName is empty."
+                )
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "name_error"
+                )
+
+                return
+
+            self.logger.info(
+                "Saving face for: "
+                + self.registrationName
+            )
+
+
+            learnedFaces = (
+                self.faceDetection.getLearnedFacesList()
+            )
+
+            self.logger.info(
+                "Current learned faces: "
+                + str(learnedFaces)
+            )
+
+            self.logger.info(
+                "Trying learnFace for: "
+                + self.registrationName
+            )
+
+
+            learnedFaces = (
+                self.faceDetection.getLearnedFacesList()
+            )
+
+            self.logger.info(
+                "Current learned faces: "
+                + str(learnedFaces)
+            )
+
+            self.logger.info(
+                "Saving face for: "
+                + self.registrationName
+            )
+
+
+            if self.registrationName in learnedFaces:
+
+                self.logger.info(
+                    "Name already exists. Re-learning face for: "
+                    + self.registrationName
+                )
+
+                result = self.faceDetection.reLearnFace(
+                    self.registrationName
+                )
+
+            else:
+
+                self.logger.info(
+                    "New name. Learning face for: "
+                    + self.registrationName
+                )
+
+                result = self.faceDetection.learnFace(
+                    self.registrationName
+                )
+
+
+            self.logger.info(
+                "Face learning result: "
+                + str(result)
+            )
+
+
+            self.logger.info(
+                "learnFace result: "
+                + str(result)
+            )
+
+            if result:
+
+                # ========================================
+                # Registration successful
+                # ========================================
+
+                self.registrationRunning = False
+                self.faceMode = None
+
+                self.logger.info(
+                    "Face registration successful: "
+                    + self.registrationName
+                )
+
+                # Update tablet status
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "registration_success|"
+                    + self.registrationName
+                )
+
+                # Stop face tracking
+                try:
+
+                    self.faceDetection.setTrackingEnabled(
+                        False
+                    )
+
+                except Exception as error:
+
+                    self.logger.warning(
+                        "Could not stop face tracking: "
+                        + str(error)
+                    )
+
+                # ========================================
+                # Let Dialog announce the registered name
+                # ========================================
+
+                try:
+
+                    self.dialog.setConcept(
+                        "registered_face_name",
+                        "enu",
+                        [self.registrationName]
+                    )
+
+                    self.logger.info(
+                        "Registered name sent to Dialog: "
+                        + self.registrationName
+                    )
+
+                    self.dialog.forceInput(
+                        "face registration successful "
+                        + self.registrationName
+                    )
+
+                    self.logger.info(
+                        "Registration success announcement triggered."
+                    )
+
+                except Exception as error:
+
+                    self.logger.error(
+                        "Could not announce registration success: "
+                        + str(error)
+                    )
+
+                # Wait for Pepper to finish the short sentence
+                time.sleep(2.0)
+
+                # ========================================
+                # Return tablet to facial recognition menu
+                # ========================================
+
+                self.showPage(
+                    "facialMenu.html"
+                )
+
+                self.logger.info(
+                    "Tablet returned to facial recognition menu."
+                )
+
+                # ========================================
+                # Return Dialog to facial recognition menu
+                # ========================================
+
+                try:
+
+                    self.dialog.gotoTag(
+                        "facialrecog",
+                        "greetingtopic"
+                    )
+
+                    self.logger.info(
+                        "Dialog returned to facial recognition menu."
+                    )
+
+                except Exception as error:
+
+                    self.logger.error(
+                        "Could not return Dialog to facial recognition menu: "
+                        + str(error)
+                    )
+
+            # ========================================
+            # Registration failed
+            # ========================================
+
+            else:
+
+                self.logger.warning(
+                    "learnFace returned False for: "
+                    + self.registrationName
+                )
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "registration_failed"
+                )
+
+                self.memory.raiseEvent(
+                    "faceRegistrationFailed",
+                    True
+                )
+                # Allow retry
+                self.registrationRunning = False
+                self.faceMode = None
+
+        # THIS except was missing
+        except Exception as error:
+
+            self.logger.error(
+                "saveRegisteredFace error: "
+                + str(error)
+            )
+
+            self.registrationRunning = False
+            self.faceMode = None
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+
+
+
+# ========================================
+# Retry registration calibration
+# ========================================
+
+    def retryRegistration(self):
+
+        try:
+
+            if self.registrationName == "":
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "enter_name"
+                )
+
+                return
+
+            self.logger.info(
+                "Retrying registration for: "
+                + self.registrationName
+            )
+
+            self.faceMode = "registration"
+            self.registrationRunning = True
+
+            self.faceDetection.setTrackingEnabled(
+                True
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "looking"
+            )
+
+        except Exception as error:
+
+            self.logger.error(
+                "retryRegistration error: "
+                + str(error)
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+
+    def onFaceDetected(self, key, value, message):
+
+        try:
+
+            if (
+                not self.recognitionRunning
+                and not self.registrationRunning
+            ):
+                return
+
+            if value is None:
+                return
+
+            if len(value) < 2:
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "looking"
+                )
+
+                return
+
+            faces = value[1]
+
+            if faces is None or len(faces) == 0:
+
+                self.memory.raiseEvent(
+                    "faceStatus",
+                    "looking"
+                )
+
+                return
+
+            self.logger.info(
+                "FaceDetected event received."
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "face_detected"
+            )
+
+            if self.faceMode == "recognition":
+
+                self.processRecognitionResult(
+                    faces
+                )
+
+            elif self.faceMode == "registration":
+
+                self.processRegistrationFace(
+                    faces
+                )
+
+        except Exception as error:
+
+            self.logger.error(
+                "onFaceDetected error: "
+                + str(error)
+            )
+
+            self.memory.raiseEvent(
+                "faceStatus",
+                "error"
+            )
+
+    def stopFaceProcess(self):
+
+        self.logger.info(
+            "Stopping face process."
+        )
+
+        self.recognitionRunning = False
+        self.registrationRunning = False
+        self.faceMode = None
+
+        try:
+
+            self.faceDetection.setTrackingEnabled(
+                False
+            )
+
+        except Exception as error:
+
+            self.logger.warning(
+                "Could not disable face tracking: "
+                + str(error)
+            )
+
+    def showPage(self, page):
+        try:
+            if page.startswith("http://") or page.startswith("https://"):
+                url = page
+            else:
+                url = (
+                    "http://198.18.0.1/apps/"
+                    ".lastUploadedChoregrapheBehavior/"
+                    + page
+                    + "?v="
+                    + str(int(time.time()))
+                )
+
+            print "Loading page:", url
+
+            load_result = self.tablet.loadUrl(url)
+            print "loadUrl result:", load_result
+
+            show_result = self.tablet.showWebview()
+            print "showWebview result:", show_result
+
+        except Exception as error:
+            print "showPage error:", error]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Input name="askRecognition" type="1" type_size="1" nature="1" inner="0" tooltip="" id="4" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="5" /><Output name="recognitionYes" type="1" type_size="1" nature="2" inner="0" tooltip="" id="6" /><Output name="recognitionNo" type="1" type_size="1" nature="2" inner="0" tooltip="" id="7" /><Output name="registrationYes" type="1" type_size="1" nature="2" inner="0" tooltip="" id="8" /><Output name="registrationNo" type="1" type_size="1" nature="2" inner="0" tooltip="" id="9" /><Output name="recognizeAgainYes" type="1" type_size="1" nature="2" inner="0" tooltip="" id="10" /><Output name="recognizeAgainNo" type="1" type_size="1" nature="2" inner="0" tooltip="" id="11" /></Box><Box name="Recoginize Face" id="22" localization="8" tooltip="" x="401" y="257"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.memory = None
+        self.face = None
+        self.running = False
+
+    def onLoad(self):
+
+        self.memory = ALProxy("ALMemory")
+        self.face = ALProxy("ALFaceDetection")
+
+    def onUnload(self):
+
+        self.stopRecognition()
+
+    def stopRecognition(self):
+
+        if not self.running:
+            return
+
+        try:
+            self.memory.unsubscribeToEvent(
+                "FaceDetected",
+                self.getName()
+            )
+        except:
+            pass
+
+        try:
+            self.face.unsubscribe(self.getName())
+        except:
+            pass
+
+        self.running = False
+
+    def onInput_onStart(self):
+
+        if self.running:
+            return
+
+        self.running = True
+
+        self.face.setRecognitionEnabled(True)
+
+        self.face.subscribe(
+            self.getName(),
+            500,
+            0.0
+        )
+
+        self.memory.subscribeToEvent(
+            "FaceDetected",
+            self.getName(),
+            "onFaceDetected"
+        )
+
+    def onFaceDetected(self, key, value, message):
+
+        if not self.running:
+            return
+
+        # 第一阶段先把 Pepper 的实际返回值打印出来
+        self.logger.info(
+            "FaceDetected VALUE = " + str(value)
+        )
+
+        if not value:
+            return
+
+        if len(value) < 2:
+            return
+
+        faces = value[1]
+
+        if not faces:
+            return
+
+        try:
+
+            faceInfo = faces[0]
+
+            # Recognition information
+            extraInfo = faceInfo[1]
+
+            self.logger.info(
+                "ExtraInfo = " + str(extraInfo)
+            )
+
+            name = ""
+
+            # 这里暂时不要盲目假设你的 2.5.10.7
+            # 返回结构与所有旧版示例完全相同。
+            #
+            # 实机运行以后，我们根据 Log 中的
+            # ExtraInfo 精确确定 name 的位置。
+
+            if len(extraInfo) >= 3:
+                name = str(extraInfo[2])
+
+            self.stopRecognition()
+
+            if name and name != "":
+                self.logger.info(
+                    "Recognized: " + name
+                )
+
+                self.recognizedName(name)
+
+            else:
+                self.logger.info(
+                    "Unknown face."
+                )
+
+                self.unknown()
+
+        except Exception as e:
+
+            self.logger.error(
+                "Recognition parsing error: " + str(e)
+            )
+
+    def onInput_onStop(self):
+
+        self.stopRecognition()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="recoginizedName" type="3" type_size="1" nature="2" inner="0" tooltip="" id="5" /><Output name="unknown" type="1" type_size="1" nature="2" inner="0" tooltip="" id="6" /></Box><Box name="Recognized" id="2" localization="8" tooltip="" x="627" y="567"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        self.tts = None
+
+    def onLoad(self):
+        self.tts = ALProxy("ALTextToSpeech")
+
+    def onInput_name(self, name):
+
+        text = "Hello " + str(name) + \
+               ", welcome back to Ballarat School."
+
+        self.tts.say(text)
+
+        self.done()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="name" type="3" type_size="1" nature="1" inner="0" tooltip="" id="2" /><Output name="done" type="1" type_size="1" nature="2" inner="0" tooltip="" id="3" /></Box><Box name="Receive Visitor Name" id="3" localization="8" tooltip="" x="161" y="488"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.memory = None
+        self.running = False
+
+    def onLoad(self):
+
+        self.memory = ALProxy("ALMemory")
+
+    def onInput_onStart(self):
+
+        if self.running:
+            return
+
+        self.running = True
+
+        self.memory.subscribeToEvent(
+            "VisitorRegistration/Name",
+            self.getName(),
+            "onNameReceived"
+        )
+
+    def onNameReceived(
+        self,
+        key,
+        value,
+        message
+    ):
+
+        if not self.running:
+            return
+
+        visitorName = str(value).strip()
+
+        if visitorName == "":
+            return
+
+        self.logger.info(
+            "Visitor name: " + visitorName
+        )
+
+        try:
+            self.memory.unsubscribeToEvent(
+                "VisitorRegistration/Name",
+                self.getName()
+            )
+        except:
+            pass
+
+        self.running = False
+
+        self.name(visitorName)
+
+    def onInput_onStop(self):
+
+        if self.running:
+
+            try:
+                self.memory.unsubscribeToEvent(
+                    "VisitorRegistration/Name",
+                    self.getName()
+                )
+            except:
+                pass
+
+            self.running = False]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="name" type="3" type_size="1" nature="2" inner="0" tooltip="" id="4" /></Box><Box name="learn face" id="5" localization="8" tooltip="" x="568" y="376"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.face = None
+        self.tts = None
+
+    def onLoad(self):
+
+        self.face = ALProxy(
+            "ALFaceDetection"
+        )
+
+        self.tts = ALProxy(
+            "ALTextToSpeech"
+        )
+
+    def onInput_name(self, name):
+
+        visitorName = str(name).strip()
+
+        if visitorName == "":
+            self.failed()
+            return
+
+        try:
+
+            # 看看名字是不是已经存在
+            learnedFaces = \
+                self.face.getLearnedFacesList()
+
+            self.logger.info(
+                "Current database: " +
+                str(learnedFaces)
+            )
+
+            if visitorName in learnedFaces:
+
+                self.logger.info(
+                    visitorName +
+                    " already exists."
+                )
+
+                self.tts.say(
+                    visitorName +
+                    " is already registered."
+                )
+
+                self.failed()
+                return
+
+            self.tts.say(
+                "Please look at me."
+            )
+
+            result = self.face.learnFace(
+                visitorName
+            )
+
+            self.logger.info(
+                "learnFace result: " +
+                str(result)
+            )
+
+            if result:
+
+                self.tts.say(
+                    "Thank you " +
+                    visitorName +
+                    ". I will remember you."
+                )
+
+                self.success(
+                    visitorName
+                )
+
+            else:
+
+                self.tts.say(
+                    "Sorry. I could not "
+                    "register your face."
+                )
+
+                self.failed()
+
+        except Exception as e:
+
+            self.logger.error(
+                "learnFace error: " +
+                str(e)
+            )
+
+            self.tts.say(
+                "Sorry. Something went wrong."
+            )
+
+            self.failed()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="name" type="3" type_size="1" nature="1" inner="0" tooltip="" id="2" /><Output name="success" type="3" type_size="1" nature="2" inner="0" tooltip="" id="3" /><Output name="failed" type="1" type_size="1" nature="2" inner="0" tooltip="" id="4" /></Box><Box name="check database" id="6" localization="8" tooltip="" x="387" y="493"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+        self.face = None
+
+    def onLoad(self):
+
+        self.face = ALProxy(
+            "ALFaceDetection"
+        )
+
+    def onInput_onStart(self):
+
+        try:
+
+            names = \
+                self.face.getLearnedFacesList()
+
+            self.logger.info(
+                "===== FACE DATABASE ====="
+            )
+
+            for name in names:
+                self.logger.info(
+                    str(name)
+                )
+
+            self.logger.info(
+                "========================="
+            )
+
+        except Exception as e:
+
+            self.logger.error(
+                str(e)
+            )
+
+        self.done()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Output name="done" type="1" type_size="1" nature="2" inner="0" tooltip="" id="2" /></Box><Box name="TestName" id="7" localization="8" tooltip="" x="60" y="389"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        pass
+
+    def onUnload(self):
+        pass
+
+    def onInput_onStart(self):
+        self.name("Wong")]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="name" type="3" type_size="1" nature="2" inner="0" tooltip="" id="4" /></Box><Box name="WaitForFace" id="13" localization="8" tooltip="" x="91" y="257"><bitmap>media/images/box/box-python-script.png</bitmap><script language="4"><content><![CDATA[class MyClass(GeneratedClass):
+
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        self.memory = None
+        self.face = None
+        self.running = False
+
+    def onLoad(self):
+        self.memory = ALProxy("ALMemory")
+        self.face = ALProxy("ALFaceDetection")
+
+    def onUnload(self):
+        self.stopDetection()
+
+    def stopDetection(self):
+        if not self.running:
+            return
+
+        try:
+            self.memory.unsubscribeToEvent(
+                "FaceDetected",
+                self.getName()
+            )
+        except:
+            pass
+
+        try:
+            self.face.unsubscribe(self.getName())
+        except:
+            pass
+
+        self.running = False
+
+    def onInput_onStart(self):
+
+        if self.running:
+            return
+
+        self.running = True
+
+        # 这里只需要检测，不需要识别
+        self.face.setRecognitionEnabled(False)
+
+        self.face.subscribe(
+            self.getName(),
+            500,
+            0.0
+        )
+
+        self.memory.subscribeToEvent(
+            "FaceDetected",
+            self.getName(),
+            "onFaceDetected"
+        )
+
+    def onFaceDetected(self, key, value, message):
+
+        if not self.running:
+            return
+
+        if value and len(value) > 1:
+
+            self.logger.info("Face detected.")
+
+            self.stopDetection()
+
+            self.faceDetected()
+
+    def onInput_onStop(self):
+        self.stopDetection()]]></content></script><Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" /><Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" /><Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" /><Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" /><Output name="faceDetected" type="1" type_size="1" nature="2" inner="0" tooltip="" id="5" /></Box><Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="2" /><Link inputowner="14" indexofinput="2" outputowner="1" indexofoutput="4" /><Link inputowner="17" indexofinput="2" outputowner="0" indexofoutput="2" /><Link inputowner="0" indexofinput="4" outputowner="17" indexofoutput="5" /><Link inputowner="16" indexofinput="2" outputowner="14" indexofoutput="3" /><Link inputowner="0" indexofinput="4" outputowner="16" indexofoutput="4" /></Diagram></BehaviorKeyframe></BehaviorLayer></Timeline></Box></ChoregrapheProject>

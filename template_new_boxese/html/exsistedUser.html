@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>Existing User</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="/libs/qimessaging/2/qimessaging.js"></script>
+  <script src="tag.js"></script>
+  <script src="camera.js"></script>
+</head>
+
+
+<body>
+
+  <h1 class="face-page-title">
+    Existing user, do you want to start to recognize your face?
+  </h1>
+
+
+  <div class="faceWindow">
+
+    <!-- Pepper camera -->
+    <canvas id="cameraFeed"></canvas>
+
+
+    <!-- Face positioning guide -->
+    <div class="faceGuide"></div>
+
+
+    <!-- Recognition status -->
+    <div id="faceStatus">
+      Camera is starting...
+    </div>
+
+  </div>
+
+
+  <div class="buttonArea">
+
+    <button
+      type="button"
+      onclick="goToDialogTag('recognition_yes')"
+    >
+      Yes, recognize me
+    </button>
+
+
+    <button
+      type="button"
+      onclick="goToDialogTag('facialMenu')"
+    >
+      Back
+    </button>
+
+  </div>
+
+
+  <!-- Used by your existing tag.js -->
+  <div id="status" style="display:none;"></div>
+
+</body>
+
+</html>
