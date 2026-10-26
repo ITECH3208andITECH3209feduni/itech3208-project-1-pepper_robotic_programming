@@ -1,0 +1,10 @@
+topic: ~askrecognition()
+language: enu
+
+concept:(yes) [yes yeah sure okay please]
+concept:(no) [no nope no thanks]
+
+proposal: %askRecognition Would you like me to recognize your face?
+
+u:(~yes) Yes. Please look at me. $ReceptionAnswer=recognition_yes
+u:(~no) No problem. $ReceptionAnswer=recognition_no
